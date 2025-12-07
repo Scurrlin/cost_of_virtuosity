@@ -120,7 +120,7 @@ load_dotenv()
 API = "https://api.data.gov/ed/collegescorecard/v1/schools"
 API_KEY = os.getenv("SCORECARD_API_KEY")
 UNITIDS = [164748, 192110, 167057, 192712, 211893]
-YEARS = list(range(2012, 2022 + 1))
+YEARS = range(2012, 2022 + 1)
 
 NAME_MAP = {
     164748: "Berklee College of Music",
@@ -211,7 +211,7 @@ def main():
     for c in percentage_fields:
         if c in long_df.columns:
             s = pd.to_numeric(long_df[c], errors="coerce")
-            # Only convert if we have valid data and values are decimals
+            # Only convert if all values are valid and are decimals
             if s.notna().any():
                 valid_values = s[s.notna()]
                 if len(valid_values) > 0 and valid_values.max() <= 1.0 and valid_values.min() >= 0:
@@ -251,7 +251,8 @@ if __name__ == "__main__":
                                 Copy
                             </button>
                         </summary>
-                        <pre><code id="sql-code" class="language-python">import os
+                        <pre><code id="sql-code" class="language-python">
+import os
 import sqlite3
 import requests
 import pandas as pd
@@ -263,7 +264,7 @@ load_dotenv()
 API = "https://api.data.gov/ed/collegescorecard/v1/schools"
 API_KEY = os.getenv("SCORECARD_API_KEY")
 UNITIDS = [164748, 192110, 167057, 192712, 211893]
-YEARS = list(range(2012, 2022 + 1))
+YEARS = range(2012, 2022 + 1)
 
 NAME_MAP = {
     164748: "Berklee College of Music",
@@ -285,18 +286,18 @@ FIELD_MAP = {
 def create_database(db_path="music_schools.db"):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    
+
+    # Schools dimension table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS schools (
             school_id INTEGER PRIMARY KEY AUTOINCREMENT,
             unitid INTEGER UNIQUE NOT NULL,
             institution_name TEXT NOT NULL)
     """)
-    
-    year_columns = [f'"{year}" REAL' for year in YEARS]
 
+    # Main metrics table (long format)
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS school_metrics_long (
+        CREATE TABLE IF NOT EXISTS school_metrics (
             school_id INTEGER NOT NULL,
             year INTEGER NOT NULL,
             enrollment_total INTEGER,
@@ -308,36 +309,94 @@ def create_database(db_path="music_schools.db"):
             PRIMARY KEY (school_id, year),
             FOREIGN KEY (school_id) REFERENCES schools(school_id))
     """)
-    
-    cursor.execute(f"""
-        CREATE TABLE IF NOT EXISTS school_metrics_wide (
-            school_id INTEGER NOT NULL,
-            metric_name TEXT NOT NULL,
-            {', '.join(year_columns)},
-            PRIMARY KEY (school_id, metric_name),
-            FOREIGN KEY (school_id) REFERENCES schools(school_id))
+
+    # Add indexes for common query patterns
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_metrics_year ON school_metrics(year)"
+    )
+    cursor.execute(
+        "CREATE INDEX IF NOT EXISTS idx_metrics_school ON school_metrics(school_id)"
+    )
+
+    # Schools & Metrics View
+    cursor.execute("""
+        CREATE VIEW IF NOT EXISTS v_school_metrics AS
+        SELECT 
+            s.institution_name,
+            s.unitid,
+            m.school_id,
+            m.year,
+            m.enrollment_total,
+            m.admission_rate,
+            m.retention_rate_ft,
+            m.grad_rate_150,
+            m.tuition_fees,
+            m.avg_net_price
+        FROM school_metrics m
+        JOIN schools s ON m.school_id = s.school_id
     """)
-    
+
+    # YoY Comparisons View
+    cursor.execute("""
+        CREATE VIEW IF NOT EXISTS v_metrics_yoy AS
+        SELECT 
+            s.institution_name,
+            s.unitid,
+            m.school_id,
+            m.year,
+            m.enrollment_total,
+            m.enrollment_total - LAG(m.enrollment_total) OVER (
+                PARTITION BY m.school_id ORDER BY m.year
+            ) as enrollment_change,
+            m.tuition_fees,
+            m.tuition_fees - LAG(m.tuition_fees) OVER (
+                PARTITION BY m.school_id ORDER BY m.year
+            ) as tuition_change,
+            m.avg_net_price,
+            m.avg_net_price - LAG(m.avg_net_price) OVER (
+                PARTITION BY m.school_id ORDER BY m.year
+            ) as net_price_change,
+            m.admission_rate,
+            m.retention_rate_ft,
+            m.grad_rate_150
+        FROM school_metrics m
+        JOIN schools s ON m.school_id = s.school_id
+    """)
+
+    # School Stats Summary View
+    cursor.execute("""
+        CREATE VIEW IF NOT EXISTS v_school_summary AS
+        SELECT 
+            s.institution_name,
+            s.unitid,
+            COUNT(m.year) as years_of_data,
+            MIN(m.year) as first_year,
+            MAX(m.year) as last_year,
+            ROUND(AVG(m.enrollment_total), 0) as avg_enrollment,
+            ROUND(AVG(m.admission_rate), 2) as avg_admission_rate,
+            ROUND(AVG(m.retention_rate_ft), 2) as avg_retention_rate,
+            ROUND(AVG(m.grad_rate_150), 2) as avg_grad_rate,
+            ROUND(AVG(m.tuition_fees), 2) as avg_tuition,
+            ROUND(AVG(m.avg_net_price), 2) as avg_net_price
+        FROM schools s
+        LEFT JOIN school_metrics m ON s.school_id = m.school_id
+        GROUP BY s.school_id, s.institution_name, s.unitid
+    """)
+
     conn.commit()
     return conn
 
 def insert_schools(conn):
     cursor = conn.cursor()
-    
+
     for unitid, name in NAME_MAP.items():
-        cursor.execute("""
+        cursor.execute(
+            """
             INSERT OR IGNORE INTO schools (unitid, institution_name)
-            VALUES (?, ?)""", (unitid, name))
-        
-        cursor.execute("SELECT school_id FROM schools WHERE unitid = ?", (unitid,))
-        school_id = cursor.fetchone()[0]
-        
-        for metric_name in FIELD_MAP.keys():
-            cursor.execute("""
-                INSERT OR IGNORE INTO school_metrics_wide 
-                (school_id, metric_name)
-                VALUES (?, ?)""", (school_id, metric_name))
-    
+            VALUES (?, ?)""",
+            (unitid, name),
+        )
+
     conn.commit()
 
 def get_school_id(conn, unitid):
@@ -353,9 +412,9 @@ def fetch_year(institution_ids, year):
         "api_key": API_KEY,
         "id__in": ",".join(map(str, institution_ids)),
         "fields": ",".join(fields),
-        "per_page": 100
+        "per_page": 100,
     }
-    
+
     try:
         r = requests.get(API, params=params, timeout=30)
         r.raise_for_status()
@@ -366,18 +425,18 @@ def fetch_year(institution_ids, year):
     except ValueError as e:
         print(f"Error parsing JSON response for year {year}: {e}")
         return pd.DataFrame()
-    
+
     results = js.get("results", [])
     if not results:
         print(f"Warning: No data returned for year {year}")
         return pd.DataFrame()
-    
+
     rows = []
     for item in results:
         rid = item.get("id")
         if not rid:
             continue
-            
+
         row = {
             "institution": NAME_MAP.get(rid, item.get("school.name", "Unknown")),
             "unitid": rid,
@@ -396,7 +455,11 @@ def process_percentage_fields(df):
             s = pd.to_numeric(df[c], errors="coerce")
             if s.notna().any():
                 valid_values = s[s.notna()]
-                if len(valid_values) > 0 and valid_values.max() <= 1.0 and valid_values.min() >= 0:
+                if (
+                    len(valid_values) > 0
+                    and valid_values.max() <= 1.0
+                    and valid_values.min() >= 0
+                ):
                     # Convert to percentage and round to 2 decimal places
                     df[c] = (s * 100).round(2)
                 else:
@@ -404,91 +467,82 @@ def process_percentage_fields(df):
                     df[c] = s.round(2)
     return df
 
-def create_long_table_data(conn, df):
+def insert_metrics(conn, df):
+    """Insert metrics data into the school_metrics table."""
     cursor = conn.cursor()
-    
+
     # Add school_id to dataframe for sorting
-    df['school_id'] = df['unitid'].map(lambda x: get_school_id(conn, x))
-    df_sorted = df.sort_values(['school_id', 'year'])
-    
+    df["school_id"] = df["unitid"].map(lambda x: get_school_id(conn, x))
+    df_sorted = df.sort_values(["school_id", "year"])
+
     for _, row in df_sorted.iterrows():
-        school_id = row['school_id']
+        school_id = row["school_id"]
         if not school_id:
             continue
-            
+
         try:
-            cursor.execute("""
-                INSERT OR REPLACE INTO school_metrics_long 
+            cursor.execute(
+                """
+                INSERT OR REPLACE INTO school_metrics 
                 (school_id, year, enrollment_total, admission_rate, retention_rate_ft,
                  grad_rate_150, tuition_fees, avg_net_price)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, (
-                school_id,
-                row['year'],
-                row.get('enrollment_total'),
-                row.get('admission_rate'),
-                row.get('retention_rate_ft'),
-                row.get('grad_rate_150'),
-                row.get('tuition_fees'),
-                row.get('avg_net_price')
-            ))
+            """,
+                (
+                    school_id,
+                    row["year"],
+                    row.get("enrollment_total"),
+                    row.get("admission_rate"),
+                    row.get("retention_rate_ft"),
+                    row.get("grad_rate_150"),
+                    row.get("tuition_fees"),
+                    row.get("avg_net_price"),
+                ),
+            )
         except sqlite3.Error as e:
-            print(f"Error inserting long data for school_id {school_id}, year {row['year']}: {e}")
-    
-    conn.commit()
+            print(
+                f"Error inserting data for school_id {school_id}, year {row['year']}: {e}"
+            )
 
-def create_wide_table_data(conn, df, year):
-    cursor = conn.cursor()
-    
-    for _, row in df.iterrows():
-        school_id = get_school_id(conn, row['unitid'])
-        if not school_id:
-            continue
-        
-        for metric_name in FIELD_MAP.keys():
-            metric_value = row.get(metric_name)
-            try:
-                cursor.execute(f"""
-                    UPDATE school_metrics_wide 
-                    SET "{year}" = ?
-                    WHERE school_id = ? AND metric_name = ?
-                """, (metric_value, school_id, metric_name))
-            except sqlite3.Error as e:
-                print(f"Error updating {metric_name} for school_id {school_id}, year {year}: {e}")
-    
     conn.commit()
 
 def main():
     print("Creating Database...")
-    print("="*60)
+    print("=" * 60)
 
     db_path = f"music_schools_{datetime.now().strftime('%Y%m%d')}.db"
     conn = create_database(db_path)
     insert_schools(conn)
     failed_years = []
     all_data = []
-    
+
     for year in YEARS:
         print(f"\nFetching data for {year}...")
         df = fetch_year(UNITIDS, year)
-        
+
         if not df.empty:
             df = process_percentage_fields(df)
             all_data.append(df)
-            create_wide_table_data(conn, df, year)
         else:
             failed_years.append(year)
             print(f"  No data available for {year}")
-    
+
     if all_data:
         combined_df = pd.concat(all_data, ignore_index=True)
-        create_long_table_data(conn, combined_df)
-    
+        insert_metrics(conn, combined_df)
+        print(f"\nInserted {len(combined_df)} records into school_metrics table")
+
     if failed_years:
         print(f"\nWarning: Failed to retrieve data for years: {failed_years}")
-    
+
     conn.close()
     print(f"\nDatabase saved as: {db_path}")
+    print("\nAvailable views for easy querying:")
+    print("  - v_school_metrics    : All data with school names")
+    print("  - v_metrics_yoy       : Year-over-year changes")
+    print("  - v_school_summary    : Summary statistics per school")
+    print(f"\nExample query:")
+    print(f'  sqlite3 -header -column {db_path} "SELECT * FROM v_school_metrics;"')
 
 if __name__ == "__main__":
     try:

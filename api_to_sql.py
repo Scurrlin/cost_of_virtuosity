@@ -41,7 +41,7 @@ def create_database(db_path="music_schools.db"):
             institution_name TEXT NOT NULL)
     """)
 
-    # Main metrics table (long format - proper relational design)
+    # Main metrics table (long format)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS school_metrics (
             school_id INTEGER NOT NULL,
@@ -56,7 +56,7 @@ def create_database(db_path="music_schools.db"):
             FOREIGN KEY (school_id) REFERENCES schools(school_id))
     """)
 
-    # Add indexes for common query patterns
+    # Indexes for common query patterns
     cursor.execute(
         "CREATE INDEX IF NOT EXISTS idx_metrics_year ON school_metrics(year)"
     )
@@ -64,7 +64,7 @@ def create_database(db_path="music_schools.db"):
         "CREATE INDEX IF NOT EXISTS idx_metrics_school ON school_metrics(school_id)"
     )
 
-    # View: joins schools + metrics for easy querying
+    # Schools & Metrics View
     cursor.execute("""
         CREATE VIEW IF NOT EXISTS v_school_metrics AS
         SELECT 
@@ -82,7 +82,7 @@ def create_database(db_path="music_schools.db"):
         JOIN schools s ON m.school_id = s.school_id
     """)
 
-    # View: year-over-year comparisons with calculated changes
+    # YoY Comparisons View
     cursor.execute("""
         CREATE VIEW IF NOT EXISTS v_metrics_yoy AS
         SELECT 
@@ -109,7 +109,7 @@ def create_database(db_path="music_schools.db"):
         JOIN schools s ON m.school_id = s.school_id
     """)
 
-    # View: summary statistics per school
+    # School Stats Summary View
     cursor.execute("""
         CREATE VIEW IF NOT EXISTS v_school_summary AS
         SELECT 
@@ -287,6 +287,8 @@ def main():
     print("  - v_school_metrics    : All data with school names")
     print("  - v_metrics_yoy       : Year-over-year changes")
     print("  - v_school_summary    : Summary statistics per school")
+    print(f"\nExample query:")
+    print(f'  sqlite3 -header -column {db_path} "SELECT * FROM v_school_metrics;"')
 
 if __name__ == "__main__":
     try:

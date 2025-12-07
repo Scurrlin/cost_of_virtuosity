@@ -9,7 +9,7 @@ load_dotenv()
 API = "https://api.data.gov/ed/collegescorecard/v1/schools"
 API_KEY = os.getenv("SCORECARD_API_KEY")
 UNITIDS = [164748, 192110, 167057, 192712, 211893]
-YEARS = list(range(2012, 2022 + 1))
+YEARS = range(2012, 2022 + 1)
 
 NAME_MAP = {
     164748: "Berklee College of Music",
@@ -100,7 +100,7 @@ def main():
     for c in percentage_fields:
         if c in long_df.columns:
             s = pd.to_numeric(long_df[c], errors="coerce")
-            # Only convert if we have valid data and values are decimals
+            # Only convert if all values are valid and are decimals
             if s.notna().any():
                 valid_values = s[s.notna()]
                 if len(valid_values) > 0 and valid_values.max() <= 1.0 and valid_values.min() >= 0:
