@@ -105,7 +105,7 @@ docker build -t scorecard-tests .
 docker run --rm scorecard-tests
 ```
 
-Or using Make:
+Or using Make (standardized entry points so anyone can run tests without reading docs):
 
 ```bash
 make test          # Run tests locally

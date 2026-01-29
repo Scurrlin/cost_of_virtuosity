@@ -512,6 +512,8 @@ addopts = -v --tb=short
 
 ### Makefile
 
+The Makefile provides standardized entry points for common tasks. Anyone can run `make test` or `make docker-test` without reading documentation—this is especially important for reproducible workflows when evaluating code or models across different environments.
+
 ```makefile
 test:           # Run tests locally
     pytest -v
