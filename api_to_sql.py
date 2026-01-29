@@ -29,6 +29,41 @@ FIELD_MAP = {
     "avg_net_price": "cost.avg_net_price.private",
 }
 
+
+def normalize_percentages(df: pd.DataFrame, percentage_fields=None) -> pd.DataFrame:
+    """
+    Convert decimal values (0-1) to percentages (0-100) and round to 2 decimal places.
+    If values are already in percentage format (>1 or <0), just round them.
+    """
+    if percentage_fields is None:
+        percentage_fields = ["admission_rate", "retention_rate_ft", "grad_rate_150"]
+
+    out = df.copy()
+    for c in percentage_fields:
+        if c in out.columns:
+            s = pd.to_numeric(out[c], errors="coerce")
+            if s.notna().any():
+                valid = s[s.notna()]
+                if len(valid) > 0 and valid.max() <= 1.0 and valid.min() >= 0:
+                    # Convert decimals to percentages
+                    out[c] = (s * 100).round(2)
+                else:
+                    # Already in percentage format, just round
+                    out[c] = s.round(2)
+    return out
+
+
+def build_db_filename(now=None) -> str:
+    """
+    Build a database filename with timestamp.
+    Accepts optional datetime for testability.
+    """
+    if now is None:
+        now = datetime.now()
+    timestamp = now.strftime("%Y%m%d")
+    return f"music_schools_{timestamp}.db"
+
+
 def create_database(db_path="music_schools.db"):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -194,24 +229,6 @@ def fetch_year(institution_ids, year):
         rows.append(row)
     return pd.DataFrame(rows)
 
-def process_percentage_fields(df):
-    percentage_fields = ["admission_rate", "retention_rate_ft", "grad_rate_150"]
-    for c in percentage_fields:
-        if c in df.columns:
-            s = pd.to_numeric(df[c], errors="coerce")
-            if s.notna().any():
-                valid_values = s[s.notna()]
-                if (
-                    len(valid_values) > 0
-                    and valid_values.max() <= 1.0
-                    and valid_values.min() >= 0
-                ):
-                    # Convert to percentage and round to 2 decimal places
-                    df[c] = (s * 100).round(2)
-                else:
-                    # If already in percentage format, just round to 2 decimal places
-                    df[c] = s.round(2)
-    return df
 
 def insert_metrics(conn, df):
     """Insert metrics data into the school_metrics table."""
@@ -256,7 +273,7 @@ def main():
     print("Creating Database...")
     print("=" * 60)
 
-    db_path = f"music_schools_{datetime.now().strftime('%Y%m%d')}.db"
+    db_path = build_db_filename()
     conn = create_database(db_path)
     insert_schools(conn)
     failed_years = []
@@ -267,7 +284,7 @@ def main():
         df = fetch_year(UNITIDS, year)
 
         if not df.empty:
-            df = process_percentage_fields(df)
+            df = normalize_percentages(df)
             all_data.append(df)
         else:
             failed_years.append(year)

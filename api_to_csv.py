@@ -33,6 +33,42 @@ FIELD_MAP = {
     "avg_net_price": "cost.avg_net_price.private",
 }
 
+
+def normalize_percentages(df: pd.DataFrame, percentage_fields=None) -> pd.DataFrame:
+    """
+    Convert decimal values (0-1) to percentages (0-100) and round to 2 decimal places.
+    If values are already in percentage format (>1 or <0), just round them.
+    """
+    if percentage_fields is None:
+        percentage_fields = ["admission_rate", "retention_rate_ft", "grad_rate_150"]
+
+    out = df.copy()
+    for c in percentage_fields:
+        if c in out.columns:
+            s = pd.to_numeric(out[c], errors="coerce")
+            if s.notna().any():
+                valid = s[s.notna()]
+                if len(valid) > 0 and valid.max() <= 1.0 and valid.min() >= 0:
+                    # Convert decimals to percentages
+                    out[c] = (s * 100).round(2)
+                else:
+                    # Already in percentage format, just round
+                    out[c] = s.round(2)
+    return out
+
+
+def build_filename(years, now=None) -> str:
+    """
+    Build a filename with year range and timestamp.
+    Accepts optional datetime for testability.
+    """
+    if now is None:
+        now = datetime.now()
+    year_range = f"{min(years)}_{max(years)}"
+    timestamp = now.strftime("%Y%m%d")
+    return f"music_school_data_{year_range}_{timestamp}.csv"
+
+
 def fetch_year(institution_ids, year):
     fields = ["id", "school.name"]
     fields += [f"{year}.{f}" for f in FIELD_MAP.values()]
@@ -94,26 +130,10 @@ def main():
         print(f"Warning: Failed to retrieve data for years: {failed_years}")
     
     long_df = pd.concat(frames, ignore_index=True)
-    
-    # Convert select fields to percentages
-    percentage_fields = ["admission_rate", "retention_rate_ft", "grad_rate_150"]
-    for c in percentage_fields:
-        if c in long_df.columns:
-            s = pd.to_numeric(long_df[c], errors="coerce")
-            # Only convert if all values are valid and are decimals
-            if s.notna().any():
-                valid_values = s[s.notna()]
-                if len(valid_values) > 0 and valid_values.max() <= 1.0 and valid_values.min() >= 0:
-                    # Convert to percentage and round to 2 decimal places
-                    long_df[c] = (s * 100).round(2)
-                else:
-                    # If already in percentage format, just round to 2 decimal places
-                    long_df[c] = s.round(2)
+    long_df = normalize_percentages(long_df)
 
     sorted_df = long_df.sort_values(['institution', 'year']).reset_index(drop=True)
-    year_range = f"{min(YEARS)}_{max(YEARS)}"
-    timestamp = datetime.now().strftime("%Y%m%d")
-    filename = f"music_school_data_{year_range}_{timestamp}.csv"
+    filename = build_filename(YEARS)
     
     sorted_df.to_csv(filename, index=False)
     print(f"Saved data: {filename} ({len(sorted_df)} rows, {len(sorted_df['institution'].unique())} institutions)")
