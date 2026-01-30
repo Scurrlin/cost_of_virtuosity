@@ -366,7 +366,7 @@ Tests filename generation:
 
 ---
 
-### test_sql.py (25 tests)
+### tests/unit/test_sql.py (25 unit tests)
 
 #### TestNormalizePercentages (1 sanity test)
 
@@ -428,16 +428,29 @@ def in_memory_db():
 | `test_skips_unknown_unitids` | Unknown unitids silently skipped |
 | `test_upserts_on_duplicate_key` | Re-insert updates existing row |
 
-#### TestViews (2 integration tests)
+#### TestViews (2 tests)
 
 | Test | What It Verifies |
 |------|------------------|
 | `test_v_school_metrics_joins_correctly` | JOIN produces expected output |
 | `test_v_school_summary_calculates_averages` | Aggregations are correct |
 
-#### TestMainIntegration (2 integration tests)
+---
 
-Integration tests verify the complete `main()` workflow:
+### tests/integration/test_csv_integration.py (2 integration tests)
+
+Integration tests verify the complete `main()` workflow for CSV export:
+
+| Test | What It Verifies |
+|------|------------------|
+| `test_main_produces_valid_csv_with_correct_data` | Full pipeline: API → transform → CSV file with correct content |
+| `test_main_handles_partial_api_failures` | Graceful degradation when some API calls fail |
+
+---
+
+### tests/integration/test_sql_integration.py (2 integration tests)
+
+Integration tests verify the complete `main()` workflow for database creation:
 
 | Test | What It Verifies |
 |------|------------------|
@@ -574,8 +587,9 @@ Excludes from Docker image:
 |-----------|---------|
 | `api_to_csv.py` | Fetch → Transform → CSV |
 | `api_to_sql.py` | Fetch → Transform → SQLite with views |
-| `tests/test_csv.py` | 27 tests (25 unit + 2 integration) |
-| `tests/test_sql.py` | 27 tests (25 unit + 2 integration) |
+| `tests/unit/test_csv.py` | 25 unit tests |
+| `tests/unit/test_sql.py` | 25 unit tests |
+| `tests/integration/` | 4 integration tests (2 per script) |
 | `Dockerfile` | Reproducible test execution |
 | `Makefile` | Developer convenience commands |
 
