@@ -9,6 +9,8 @@ load_dotenv()
 
 API = "https://api.data.gov/ed/collegescorecard/v1/schools"
 API_KEY = os.getenv("SCORECARD_API_KEY")
+
+# DOE Unit Identification Numbers
 UNITIDS = [164748, 192110, 167057, 192712, 211893]
 YEARS = range(2012, 2022 + 1)
 
@@ -25,19 +27,24 @@ FIELD_MAP = {
     "admission_rate": "admissions.admission_rate.overall",
     "retention_rate_ft": "student.retention_rate.four_year.full_time",
     "grad_rate_150": "completion.completion_rate_4yr_150nt",
+
+    # Published tuition + required fees only (no room/board) 
     "tuition_fees": "cost.tuition.in_state",
+
+    # What families actually pay:
+    # (Tuition + Room/Board + Books + Personal) - (Federal + State + Institutional grants)
     "avg_net_price": "cost.avg_net_price.private",
 }
 
 
+# Convert decimal values (0-1) to percentages (0-100) and round to 2 decimal places
+# If values are already in percentage format (>1 or <0), just round them
 def normalize_percentages(df: pd.DataFrame, percentage_fields=None) -> pd.DataFrame:
-    """
-    Convert decimal values (0-1) to percentages (0-100) and round to 2 decimal places.
-    If values are already in percentage format (>1 or <0), just round them.
-    """
     if percentage_fields is None:
         percentage_fields = ["admission_rate", "retention_rate_ft", "grad_rate_150"]
 
+    # c = column
+    # s = series
     out = df.copy()
     for c in percentage_fields:
         if c in out.columns:
@@ -53,11 +60,9 @@ def normalize_percentages(df: pd.DataFrame, percentage_fields=None) -> pd.DataFr
     return out
 
 
+# Build a database filename with timestamp
+# Accepts optional datetime for testing
 def build_db_filename(now=None) -> str:
-    """
-    Build a database filename with timestamp.
-    Accepts optional datetime for testability.
-    """
     if now is None:
         now = datetime.now()
     timestamp = now.strftime("%Y%m%d")
@@ -73,8 +78,7 @@ def create_database(db_path="music_schools.db"):
         CREATE TABLE IF NOT EXISTS schools (
             school_id INTEGER PRIMARY KEY AUTOINCREMENT,
             unitid INTEGER UNIQUE NOT NULL,
-            institution_name TEXT NOT NULL)
-    """)
+            institution_name TEXT NOT NULL)""")
 
     # Main metrics table (long format)
     cursor.execute("""
@@ -88,22 +92,19 @@ def create_database(db_path="music_schools.db"):
             tuition_fees REAL,
             avg_net_price REAL,
             PRIMARY KEY (school_id, year),
-            FOREIGN KEY (school_id) REFERENCES schools(school_id))
-    """)
+            FOREIGN KEY (school_id) REFERENCES schools(school_id))""")
 
     # Indexes for common query patterns
     cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_metrics_year ON school_metrics(year)"
-    )
+        "CREATE INDEX IF NOT EXISTS idx_metrics_year ON school_metrics(year)")
+
     cursor.execute(
-        "CREATE INDEX IF NOT EXISTS idx_metrics_school ON school_metrics(school_id)"
-    )
+        "CREATE INDEX IF NOT EXISTS idx_metrics_school ON school_metrics(school_id)")
 
     # Schools & Metrics View
     cursor.execute("""
         CREATE VIEW IF NOT EXISTS v_school_metrics AS
-        SELECT 
-            s.institution_name,
+        SELECT s.institution_name,
             s.unitid,
             m.school_id,
             m.year,
@@ -114,42 +115,35 @@ def create_database(db_path="music_schools.db"):
             m.tuition_fees,
             m.avg_net_price
         FROM school_metrics m
-        JOIN schools s ON m.school_id = s.school_id
-    """)
+        JOIN schools s ON m.school_id = s.school_id""")
 
     # YoY Comparisons View
     cursor.execute("""
         CREATE VIEW IF NOT EXISTS v_metrics_yoy AS
-        SELECT 
-            s.institution_name,
-            s.unitid,
-            m.school_id,
-            m.year,
-            m.enrollment_total,
-            m.enrollment_total - LAG(m.enrollment_total) OVER (
-                PARTITION BY m.school_id ORDER BY m.year
-            ) as enrollment_change,
-            m.tuition_fees,
-            m.tuition_fees - LAG(m.tuition_fees) OVER (
-                PARTITION BY m.school_id ORDER BY m.year
-            ) as tuition_change,
-            m.avg_net_price,
-            m.avg_net_price - LAG(m.avg_net_price) OVER (
-                PARTITION BY m.school_id ORDER BY m.year
-            ) as net_price_change,
-            m.admission_rate,
-            m.retention_rate_ft,
-            m.grad_rate_150
+        SELECT s.institution_name, s.unitid, m.school_id, m.year,
+        
+        m.enrollment_total,
+        m.enrollment_total - LAG(m.enrollment_total)
+        OVER (PARTITION BY m.school_id ORDER BY m.year) AS enrollment_change,
+        
+        m.tuition_fees,
+        m.tuition_fees - LAG(m.tuition_fees)
+        OVER (PARTITION BY m.school_id ORDER BY m.year) AS tuition_change,
+        
+        m.avg_net_price,
+        m.avg_net_price - LAG(m.avg_net_price)
+        OVER (PARTITION BY m.school_id ORDER BY m.year) AS net_price_change,
+
+        m.admission_rate, m.retention_rate_ft, m.grad_rate_150
+        
         FROM school_metrics m
-        JOIN schools s ON m.school_id = s.school_id
-    """)
+        JOIN schools s ON m.school_id = s.school_id""")
 
     # School Stats Summary View
     cursor.execute("""
         CREATE VIEW IF NOT EXISTS v_school_summary AS
-        SELECT 
-            s.institution_name,
-            s.unitid,
+
+        SELECT s.institution_name, s.unitid,
             COUNT(m.year) as years_of_data,
             MIN(m.year) as first_year,
             MAX(m.year) as last_year,
@@ -159,24 +153,23 @@ def create_database(db_path="music_schools.db"):
             ROUND(AVG(m.grad_rate_150), 2) as avg_grad_rate,
             ROUND(AVG(m.tuition_fees), 2) as avg_tuition,
             ROUND(AVG(m.avg_net_price), 2) as avg_net_price
+        
         FROM schools s
         LEFT JOIN school_metrics m ON s.school_id = m.school_id
-        GROUP BY s.school_id, s.institution_name, s.unitid
-    """)
+        GROUP BY s.school_id, s.institution_name, s.unitid""")
 
     conn.commit()
     return conn
+
 
 def insert_schools(conn):
     cursor = conn.cursor()
 
     for unitid, name in NAME_MAP.items():
-        cursor.execute(
-            """
+        cursor.execute("""
             INSERT OR IGNORE INTO schools (unitid, institution_name)
             VALUES (?, ?)""",
-            (unitid, name),
-        )
+            (unitid, name),)
 
     conn.commit()
 
@@ -185,6 +178,7 @@ def get_school_id(conn, unitid):
     cursor.execute("SELECT school_id FROM schools WHERE unitid = ?", (unitid,))
     result = cursor.fetchone()
     return result[0] if result else None
+
 
 def fetch_year(institution_ids, year):
     fields = ["id", "school.name"]
@@ -196,15 +190,17 @@ def fetch_year(institution_ids, year):
         "per_page": 100,
     }
 
+    # res = response
+    # ex = exception
     try:
-        r = requests.get(API, params=params, timeout=30)
-        r.raise_for_status()
-        js = r.json()
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching data for year {year}: {e}")
+        res = requests.get(API, params=params, timeout=30)
+        res.raise_for_status()
+        js = res.json()
+    except requests.exceptions.RequestException as ex:
+        print(f"Error fetching data for year {year}: {ex}")
         return pd.DataFrame()
-    except ValueError as e:
-        print(f"Error parsing JSON response for year {year}: {e}")
+    except ValueError as ex:
+        print(f"Error parsing JSON response for year {year}: {ex}")
         return pd.DataFrame()
 
     results = js.get("results", [])
@@ -214,13 +210,13 @@ def fetch_year(institution_ids, year):
 
     rows = []
     for item in results:
-        rid = item.get("id")
-        if not rid:
+        row_id = item.get("id")
+        if not row_id:
             continue
 
         row = {
-            "institution": NAME_MAP.get(rid, item.get("school.name", "Unknown")),
-            "unitid": rid,
+            "institution": NAME_MAP.get(row_id, item.get("school.name", "Unknown")),
+            "unitid": row_id,
             "year": year,
         }
 
@@ -230,8 +226,8 @@ def fetch_year(institution_ids, year):
     return pd.DataFrame(rows)
 
 
+# Insert metrics data into the school_metrics table
 def insert_metrics(conn, df):
-    """Insert metrics data into the school_metrics table."""
     cursor = conn.cursor()
 
     # Add school_id to dataframe for sorting
@@ -244,13 +240,11 @@ def insert_metrics(conn, df):
             continue
 
         try:
-            cursor.execute(
-                """
+            cursor.execute("""
                 INSERT OR REPLACE INTO school_metrics 
                 (school_id, year, enrollment_total, admission_rate, retention_rate_ft,
                  grad_rate_150, tuition_fees, avg_net_price)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """,
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     school_id,
                     row["year"],
@@ -262,9 +256,9 @@ def insert_metrics(conn, df):
                     row.get("avg_net_price"),
                 ),
             )
-        except sqlite3.Error as e:
+        except sqlite3.Error as err:
             print(
-                f"Error inserting data for school_id {school_id}, year {row['year']}: {e}"
+                f"Error inserting data for school_id {school_id}, year {row['year']}: {err}"
             )
 
     conn.commit()
@@ -307,11 +301,12 @@ def main():
     print(f"\nExample query:")
     print(f'  sqlite3 -header -column {db_path} "SELECT * FROM v_school_metrics;"')
 
+
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
         print("\nOperation cancelled by user.")
-    except Exception as e:
-        print(f"Error: {e}")
+    except Exception as ex:
+        print(f"Error: {ex}")
         raise SystemExit(1)

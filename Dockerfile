@@ -1,13 +1,14 @@
-# Dockerfile for running tests in a reproducible environment
-# Usage:
-#   docker build -t scorecard-tests .
-#   docker run --rm scorecard-tests
+# Dockerfile for running tests
+
+# docker build -t scorecard-tests .
+# docker run --rm scorecard-tests
 
 FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy only requirements first (better layer caching)
+# Copy only requirements first
+# for better layer caching
 COPY requirements.txt .
 
 # Install dependencies

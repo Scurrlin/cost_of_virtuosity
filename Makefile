@@ -1,10 +1,18 @@
-# Makefile for common development tasks
+# Makefile for running tests
 
-.PHONY: test docker-test docker-build clean
+.PHONY: test test-unit test-integration test-cov docker-test docker-build clean
 
-# Run tests locally (fast, daily use)
+# Run all tests
 test:
 	pytest -v
+
+# Run unit tests only (fast)
+test-unit:
+	pytest tests/unit/ -v
+
+# Run integration tests only
+test-integration:
+	pytest tests/integration/ -v
 
 # Run tests with coverage
 test-cov:
@@ -14,12 +22,12 @@ test-cov:
 docker-build:
 	docker build -t scorecard-tests .
 
-# Run tests in Docker (verification mode)
+# Run tests in Docker
 docker-test: docker-build
 	docker run --rm scorecard-tests
 
 # Clean up generated files
 clean:
 	rm -rf __pycache__ .pytest_cache
-	rm -rf tests/__pycache__
+	find tests -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	rm -f *.csv *.db

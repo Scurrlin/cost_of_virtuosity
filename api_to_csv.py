@@ -8,6 +8,8 @@ load_dotenv()
 
 API = "https://api.data.gov/ed/collegescorecard/v1/schools"
 API_KEY = os.getenv("SCORECARD_API_KEY")
+
+# DOE Unit Identification Numbers
 UNITIDS = [164748, 192110, 167057, 192712, 211893]
 YEARS = range(2012, 2022 + 1)
 
@@ -34,14 +36,14 @@ FIELD_MAP = {
 }
 
 
+# Convert decimal values (0-1) to percentages (0-100) and round to 2 decimal places
+# If values are already in percentage format (>1 or <0), just round them
 def normalize_percentages(df: pd.DataFrame, percentage_fields=None) -> pd.DataFrame:
-    """
-    Convert decimal values (0-1) to percentages (0-100) and round to 2 decimal places.
-    If values are already in percentage format (>1 or <0), just round them.
-    """
     if percentage_fields is None:
         percentage_fields = ["admission_rate", "retention_rate_ft", "grad_rate_150"]
 
+    # c = column
+    # s = series
     out = df.copy()
     for c in percentage_fields:
         if c in out.columns:
@@ -57,11 +59,9 @@ def normalize_percentages(df: pd.DataFrame, percentage_fields=None) -> pd.DataFr
     return out
 
 
+# Build a filename with year range and timestamp
+# Accepts optional datetime for testing
 def build_filename(years, now=None) -> str:
-    """
-    Build a filename with year range and timestamp.
-    Accepts optional datetime for testability.
-    """
     if now is None:
         now = datetime.now()
     year_range = f"{min(years)}_{max(years)}"
@@ -76,18 +76,20 @@ def fetch_year(institution_ids, year):
         "api_key": API_KEY,
         "id__in": ",".join(map(str, institution_ids)),
         "fields": ",".join(fields),
-        "per_page": 100
+        "per_page": 100,
     }
     
+    # res = response
+    # ex = exception
     try:
-        r = requests.get(API, params=params, timeout=30)
-        r.raise_for_status()
-        js = r.json()
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching data for year {year}: {e}")
+        res = requests.get(API, params=params, timeout=30)
+        res.raise_for_status()
+        js = res.json()
+    except requests.exceptions.RequestException as ex:
+        print(f"Error fetching data for year {year}: {ex}")
         return pd.DataFrame()
-    except ValueError as e:
-        print(f"Error parsing JSON response for year {year}: {e}")
+    except ValueError as ex:
+        print(f"Error parsing JSON response for year {year}: {ex}")
         return pd.DataFrame()
     
     results = js.get("results", [])
@@ -97,13 +99,13 @@ def fetch_year(institution_ids, year):
     
     rows = []
     for item in results:
-        rid = item.get("id")
-        if not rid:
+        row_id = item.get("id")
+        if not row_id:
             continue
             
         row = {
-            "institution": NAME_MAP.get(rid, item.get("school.name", "Unknown")),
-            "unitid": rid,
+            "institution": NAME_MAP.get(row_id, item.get("school.name", "Unknown")),
+            "unitid": row_id,
             "year": year,
         }
 
@@ -111,6 +113,7 @@ def fetch_year(institution_ids, year):
             row[metric] = item.get(f"{year}.{field_suffix}")
         rows.append(row)
     return pd.DataFrame(rows)
+
 
 def main():
     frames = []
@@ -139,11 +142,12 @@ def main():
     print(f"Saved data: {filename} ({len(sorted_df)} rows, {len(sorted_df['institution'].unique())} institutions)")
     return sorted_df
 
+
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
         print("\nOperation cancelled by user.")
-    except Exception as e:
+    except Exception as ex:
         print("Error: Operation failed. Check your API key and network connection.")
         raise SystemExit(1)

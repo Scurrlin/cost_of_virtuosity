@@ -34,8 +34,12 @@ college_scorecard_api/
 ├── Dockerfile           # Containerized test execution
 ├── Makefile             # Development convenience commands
 └── tests/
-    ├── test_csv.py      # Tests for CSV export script (25 tests)
-    └── test_sql.py      # Tests for SQL database script (25 tests)
+    ├── unit/
+    │   ├── test_csv.py      # Unit tests for CSV export (25 tests)
+    │   └── test_sql.py      # Unit tests for SQL database (25 tests)
+    └── integration/
+        ├── test_csv_integration.py   # Integration tests for CSV (2 tests)
+        └── test_sql_integration.py   # Integration tests for SQL (2 tests)
 ```
 
 ## Quick Start
@@ -75,18 +79,25 @@ python api_to_sql.py
 
 ## Testing
 
-The project includes a comprehensive test suite with 50 tests covering:
+The project includes a comprehensive test suite with 54 tests covering:
 
 - **API interaction** - Mocked requests for offline, deterministic testing
 - **Error handling** - Timeouts, connection errors, invalid responses
 - **Data transformations** - Percentage conversion, edge cases
 - **Database operations** - Schema creation, CRUD, upserts, views
+- **Integration tests** - End-to-end `main()` workflow verification
 
 ### Run Tests Locally
 
 ```bash
 # Run all tests
 pytest
+
+# Run only unit tests
+pytest tests/unit/
+
+# Run only integration tests
+pytest tests/integration/
 
 # Run with verbose output
 pytest -v
@@ -105,12 +116,14 @@ docker build -t scorecard-tests .
 docker run --rm scorecard-tests
 ```
 
-Or using Make (standardized entry points so anyone can run tests without reading docs):
+Or if you prefer using Make:
 
 ```bash
-make test          # Run tests locally
-make docker-test   # Run tests in Docker
-make test-cov      # Run with coverage
+make test              # Run all tests
+make test-unit         # Run unit tests only
+make test-integration  # Run integration tests only
+make test-cov          # Run with coverage
+make docker-test       # Run tests in Docker
 ```
 
 ## Database Schema (api_to_sql.py)

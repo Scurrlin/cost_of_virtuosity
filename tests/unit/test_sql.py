@@ -1,13 +1,13 @@
-"""
-Tests for api_to_sql.py
+# =============================================================================
+# Unit Tests for api_to_sql.py
+# =============================================================================
 
-Tests are designed to run offline using in-memory SQLite.
-Covers: build_db_filename, database operations (create_database, insert_schools,
-get_school_id, insert_metrics), and views.
+# Tests are designed to run offline using in-memory SQLite
+# Covers build_db_filename(), create_database(), insert_schools(),
+# get_school_id(), insert_metrics(), and views
 
-Note: fetch_year and normalize_percentages are tested in test_csv.py since
-both scripts share identical implementations of these functions.
-"""
+# Note: fetch_year and normalize_percentages are tested in test_csv.py since
+# both scripts share identical implementations of these functions
 
 import pandas as pd
 import pytest
@@ -22,32 +22,30 @@ import api_to_sql as mod
 # =============================================================================
 
 
+# Create an in-memory database with schema for testing
 @pytest.fixture
 def in_memory_db():
-    """Create an in-memory database with schema for testing."""
     conn = mod.create_database(":memory:")
     yield conn
     conn.close()
 
-
+# Database with schools already inserted
 @pytest.fixture
 def db_with_schools(in_memory_db):
-    """Database with schools already inserted."""
     mod.insert_schools(in_memory_db)
     return in_memory_db
 
 
 # =============================================================================
-# Tests for normalize_percentages() - sanity check only
-# (Full test coverage is in test_csv.py since both scripts use identical logic)
+# Sanity check for normalize_percentages()
+# Full test coverage in test_csv.py
 # =============================================================================
 
 
 class TestNormalizePercentages:
-    """Sanity test for normalize_percentages - full coverage in test_csv.py."""
 
+    # Test 1 (Happy path): Values between 0-1 are converted to 0-100
     def test_converts_decimals_to_percentages(self):
-        """Values between 0-1 are converted to 0-100."""
         df = pd.DataFrame({
             "admission_rate": [0.5, 0.25, 0.1],
             "retention_rate_ft": [0.9, 0.85, 0.95],
@@ -67,18 +65,17 @@ class TestNormalizePercentages:
 
 
 class TestBuildDbFilename:
-    """Tests for the build_db_filename function."""
 
+    # Test 2 (Happy path): Filename follows expected format with timestamp
     def test_generates_correct_format(self):
-        """Filename follows expected format with timestamp."""
         fixed_time = datetime(2026, 1, 28, 12, 0, 0)
 
         result = mod.build_db_filename(now=fixed_time)
 
         assert result == "music_schools_20260128.db"
 
+    # Test 3 (Edge case): Filename uses current datetime when now parameter is None
     def test_uses_current_time_when_not_provided(self):
-        """Filename uses current datetime when now parameter is None."""
         result = mod.build_db_filename()
 
         today = datetime.now().strftime("%Y%m%d")
@@ -86,8 +83,8 @@ class TestBuildDbFilename:
         assert result.startswith("music_schools_")
         assert result.endswith(".db")
 
+    # Test 4 (Edge case): Different dates produce different filenames
     def test_different_dates_produce_different_filenames(self):
-        """Different dates produce different filenames."""
         date1 = datetime(2026, 1, 28, 12, 0, 0)
         date2 = datetime(2026, 2, 15, 12, 0, 0)
 
@@ -105,47 +102,58 @@ class TestBuildDbFilename:
 
 
 class TestCreateDatabase:
-    """Tests for the create_database function."""
 
+    # Test 5 (Happy path): Creates the schools table with correct schema
     def test_creates_schools_table(self, in_memory_db):
-        """create_database creates the schools table with correct schema."""
         cursor = in_memory_db.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='schools'")
+        cursor.execute("""
+            SELECT name FROM sqlite_master 
+            WHERE type='table' AND name='schools'
+        """)
         result = cursor.fetchone()
 
         assert result is not None
         assert result[0] == "schools"
 
+    # Test 6 (Happy path): Creates the school_metrics table
     def test_creates_school_metrics_table(self, in_memory_db):
-        """create_database creates the school_metrics table."""
         cursor = in_memory_db.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='school_metrics'")
+        cursor.execute("""
+            SELECT name FROM sqlite_master 
+            WHERE type = 'table' AND name = 'school_metrics'
+        """)
         result = cursor.fetchone()
 
         assert result is not None
         assert result[0] == "school_metrics"
 
+    # Test 7 (Happy path): Creates the expected indexes
     def test_creates_indexes(self, in_memory_db):
-        """create_database creates the expected indexes."""
         cursor = in_memory_db.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='index'")
+        cursor.execute("""
+            SELECT name FROM sqlite_master 
+            WHERE type='index'
+        """)
         indexes = [row[0] for row in cursor.fetchall()]
 
         assert "idx_metrics_year" in indexes
         assert "idx_metrics_school" in indexes
 
+    # Test 8 (Happy path): Creates the expected views
     def test_creates_views(self, in_memory_db):
-        """create_database creates the expected views."""
         cursor = in_memory_db.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='view'")
+        cursor.execute("""
+            SELECT name FROM sqlite_master 
+            WHERE type = 'view'
+        """)
         views = [row[0] for row in cursor.fetchall()]
 
         assert "v_school_metrics" in views
         assert "v_metrics_yoy" in views
         assert "v_school_summary" in views
 
+    # Test 9 (Happy path): schools table has the expected columns
     def test_schools_table_has_correct_columns(self, in_memory_db):
-        """schools table has the expected columns."""
         cursor = in_memory_db.cursor()
         cursor.execute("PRAGMA table_info(schools)")
         columns = {row[1] for row in cursor.fetchall()}
@@ -154,8 +162,8 @@ class TestCreateDatabase:
         assert "unitid" in columns
         assert "institution_name" in columns
 
+    # Test 10 (Happy path): School_metrics table has the expected columns
     def test_school_metrics_table_has_correct_columns(self, in_memory_db):
-        """school_metrics table has the expected columns."""
         cursor = in_memory_db.cursor()
         cursor.execute("PRAGMA table_info(school_metrics)")
         columns = {row[1] for row in cursor.fetchall()}
@@ -173,10 +181,9 @@ class TestCreateDatabase:
 
 
 class TestInsertSchools:
-    """Tests for the insert_schools function."""
 
+    # Test 11 (Happy path): Inserts all schools from NAME_MAP
     def test_inserts_all_schools_from_name_map(self, in_memory_db):
-        """insert_schools inserts all schools from NAME_MAP."""
         mod.insert_schools(in_memory_db)
 
         cursor = in_memory_db.cursor()
@@ -185,8 +192,8 @@ class TestInsertSchools:
 
         assert count == len(mod.NAME_MAP)
 
+    # Test 12 (Happy path): Inserts the correct unitids
     def test_inserts_correct_unitids(self, in_memory_db):
-        """insert_schools inserts the correct unitids."""
         mod.insert_schools(in_memory_db)
 
         cursor = in_memory_db.cursor()
@@ -195,8 +202,8 @@ class TestInsertSchools:
 
         assert unitids == set(mod.NAME_MAP.keys())
 
+    # Test 13 (Happy path): Inserts the correct institution names
     def test_inserts_correct_institution_names(self, in_memory_db):
-        """insert_schools inserts the correct institution names."""
         mod.insert_schools(in_memory_db)
 
         cursor = in_memory_db.cursor()
@@ -206,8 +213,8 @@ class TestInsertSchools:
         for unitid, name in rows:
             assert mod.NAME_MAP[unitid] == name
 
+    # Test 14 (Edge case): Can be called multiple times without duplicating data
     def test_is_idempotent(self, in_memory_db):
-        """insert_schools can be called multiple times without duplicating data."""
         mod.insert_schools(in_memory_db)
         mod.insert_schools(in_memory_db)  # Call again
 
@@ -224,24 +231,23 @@ class TestInsertSchools:
 
 
 class TestGetSchoolId:
-    """Tests for the get_school_id function."""
 
+    # Test 15 (Happy path): Returns the correct school_id for a known unitid
     def test_returns_correct_school_id(self, db_with_schools):
-        """get_school_id returns the correct school_id for a known unitid."""
         # Get Berklee's school_id
         school_id = mod.get_school_id(db_with_schools, 164748)
 
         assert school_id is not None
         assert isinstance(school_id, int)
 
+    # Test 16 (Edge case): Returns None for an unknown unitid
     def test_returns_none_for_unknown_unitid(self, db_with_schools):
-        """get_school_id returns None for an unknown unitid."""
         school_id = mod.get_school_id(db_with_schools, 999999)
 
         assert school_id is None
 
+    # Test 17 (Happy path): Different schools have different IDs
     def test_returns_different_ids_for_different_schools(self, db_with_schools):
-        """Different schools have different school_ids."""
         berklee_id = mod.get_school_id(db_with_schools, 164748)
         juilliard_id = mod.get_school_id(db_with_schools, 192110)
 
@@ -254,10 +260,9 @@ class TestGetSchoolId:
 
 
 class TestInsertMetrics:
-    """Tests for the insert_metrics function."""
 
+    # Test 18 (Happy path): Inserts data into school_metrics table
     def test_inserts_metrics_data(self, db_with_schools):
-        """insert_metrics inserts data into school_metrics table."""
         df = pd.DataFrame({
             "institution": ["Berklee College of Music"],
             "unitid": [164748],
@@ -278,8 +283,8 @@ class TestInsertMetrics:
 
         assert count == 1
 
+    # Test 19 (Happy path): Inserts the correct metric values
     def test_inserts_correct_values(self, db_with_schools):
-        """insert_metrics inserts the correct metric values."""
         df = pd.DataFrame({
             "institution": ["Berklee College of Music"],
             "unitid": [164748],
@@ -305,8 +310,8 @@ class TestInsertMetrics:
         assert row[1] == 42.0
         assert row[2] == 50000
 
+    # Test 20 (Happy path): Can insert data for multiple years
     def test_handles_multiple_years(self, db_with_schools):
-        """insert_metrics can insert data for multiple years."""
         df = pd.DataFrame({
             "institution": ["Berklee College of Music", "Berklee College of Music"],
             "unitid": [164748, 164748],
@@ -327,8 +332,8 @@ class TestInsertMetrics:
 
         assert count == 2
 
+    # Test 21 (Edge case): Can insert data for multiple schools
     def test_handles_multiple_schools(self, db_with_schools):
-        """insert_metrics can insert data for multiple schools."""
         df = pd.DataFrame({
             "institution": ["Berklee College of Music", "The Juilliard School"],
             "unitid": [164748, 192110],
@@ -349,8 +354,8 @@ class TestInsertMetrics:
 
         assert count == 2
 
+    # Test 22 (Edge case): Skips rows with unitids not in the schools table
     def test_skips_unknown_unitids(self, db_with_schools):
-        """insert_metrics skips rows with unitids not in the schools table."""
         df = pd.DataFrame({
             "institution": ["Unknown School", "Berklee College of Music"],
             "unitid": [999999, 164748],
@@ -372,8 +377,8 @@ class TestInsertMetrics:
         # Only Berklee should be inserted
         assert count == 1
 
+    # Test 23 (Edge case): Updates existing rows on duplicate (school_id, year)
     def test_upserts_on_duplicate_key(self, db_with_schools):
-        """insert_metrics updates existing rows on duplicate (school_id, year)."""
         df1 = pd.DataFrame({
             "institution": ["Berklee College of Music"],
             "unitid": [164748],
@@ -406,22 +411,24 @@ class TestInsertMetrics:
         count = cursor.fetchone()[0]
         assert count == 1  # Still only one row
 
-        cursor.execute("SELECT enrollment_total, admission_rate FROM school_metrics WHERE year = 2020")
+        cursor.execute("""
+            SELECT enrollment_total, admission_rate 
+            FROM school_metrics WHERE year = 2020
+        """)
         row = cursor.fetchone()
         assert row[0] == 1100  # Updated value
         assert row[1] == 52.0  # Updated value
 
 
 # =============================================================================
-# Tests for views (integration tests)
+# Tests for views
 # =============================================================================
 
 
 class TestViews:
-    """Integration tests for database views."""
 
+    # Test 24 (Happy path): v_school_metrics view correctly joins schools and metrics
     def test_v_school_metrics_joins_correctly(self, db_with_schools):
-        """v_school_metrics view correctly joins schools and metrics."""
         df = pd.DataFrame({
             "institution": ["Berklee College of Music"],
             "unitid": [164748],
@@ -443,8 +450,8 @@ class TestViews:
         assert row[1] == 2020
         assert row[2] == 1000
 
+    # Test 25 (Happy path): v_school_summary view correctly calculates summary statistics
     def test_v_school_summary_calculates_averages(self, db_with_schools):
-        """v_school_summary view correctly calculates summary statistics."""
         df = pd.DataFrame({
             "institution": ["Berklee College of Music", "Berklee College of Music"],
             "unitid": [164748, 164748],

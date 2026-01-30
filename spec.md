@@ -175,30 +175,32 @@ def fetch_year(institution_ids, year):
         "api_key": API_KEY,
         "id__in": ",".join(map(str, institution_ids)),
         "fields": ",".join(fields),
-        "per_page": 100
+        "per_page": 100,
     }
     
-    # Make request with error handling
+    # res = response
+    # ex = exception
     try:
-        r = requests.get(API, params=params, timeout=30)
-        r.raise_for_status()
-        js = r.json()
-    except requests.exceptions.RequestException as e:
+        res = requests.get(API, params=params, timeout=30)
+        res.raise_for_status()
+        js = res.json()
+    except requests.exceptions.RequestException as ex:
         return pd.DataFrame()  # Return empty on any error
     
     # Parse results into rows
     rows = []
     for item in js.get("results", []):
-        if not item.get("id"):
+        row_id = item.get("id")
+        if not row_id:
             continue  # Skip malformed results
         
         row = {
-            "institution": NAME_MAP.get(rid, item.get("school.name")),
-            "unitid": rid,
+            "institution": NAME_MAP.get(row_id, item.get("school.name", "Unknown")),
+            "unitid": row_id,
             "year": year,
         }
-        for metric, field in FIELD_MAP.items():
-            row[metric] = item.get(f"{year}.{field}")
+        for metric, field_suffix in FIELD_MAP.items():
+            row[metric] = item.get(f"{year}.{field_suffix}")
         rows.append(row)
     
     return pd.DataFrame(rows)
@@ -216,26 +218,25 @@ def fetch_year(institution_ids, year):
 Converts decimal rates (0-1) to percentages (0-100).
 
 ```python
+# c = column
+# s = series
 def normalize_percentages(df, percentage_fields=None):
     if percentage_fields is None:
         percentage_fields = ["admission_rate", "retention_rate_ft", "grad_rate_150"]
     
     out = df.copy()  # Never modify original
     
-    for col in percentage_fields:
-        if col not in out.columns:
-            continue
-            
-        s = pd.to_numeric(out[col], errors="coerce")  # Handle strings/bad data
-        
-        if s.notna().any():
-            valid = s[s.notna()]
-            if valid.max() <= 1.0 and valid.min() >= 0:
-                # Decimal format (0-1) → convert to percentage
-                out[col] = (s * 100).round(2)
-            else:
-                # Already percentage format → just round
-                out[col] = s.round(2)
+    for c in percentage_fields:
+        if c in out.columns:
+            s = pd.to_numeric(out[c], errors="coerce")  # Handle strings/bad data
+            if s.notna().any():
+                valid = s[s.notna()]
+                if len(valid) > 0 and valid.max() <= 1.0 and valid.min() >= 0:
+                    # Convert decimals to percentages
+                    out[c] = (s * 100).round(2)
+                else:
+                    # Already in percentage format, just round
+                    out[c] = s.round(2)
     
     return out
 ```
@@ -271,29 +272,38 @@ def build_filename(years, now=None):
 
 1. **Offline Testing**: All API calls are mocked—tests never hit the real network
 2. **Deterministic**: No randomness, no system time dependencies (injected via parameters)
-3. **Fast**: All 50 tests complete in ~2 seconds
-4. **Isolated**: Database tests use in-memory SQLite (`:memory:`)
+3. **Fast**: All 54 tests complete in ~2 seconds
+4. **Isolated**: Database tests use in-memory SQLite (`:memory:`), integration tests use temp directories
 
 ### Test Organization
 
 ```
 tests/
-├── conftest.py      # Path setup for imports
-├── test_csv.py      # 25 tests for api_to_csv.py
-└── test_sql.py      # 25 tests for api_to_sql.py
+├── __init__.py
+├── conftest.py              # Path setup for imports
+├── unit/
+│   ├── __init__.py
+│   ├── test_csv.py          # 25 unit tests for api_to_csv.py
+│   └── test_sql.py          # 25 unit tests for api_to_sql.py
+└── integration/
+    ├── __init__.py
+    ├── test_csv_integration.py   # 2 integration tests for api_to_csv.py
+    └── test_sql_integration.py   # 2 integration tests for api_to_sql.py
 ```
 
 **Why the split?**
 
-- `test_csv.py` tests shared functions (`fetch_year`, `normalize_percentages`) thoroughly
-- `test_sql.py` skips duplicated tests and focuses on database-specific logic
-- Total: 50 tests with no redundancy
+- `unit/test_csv.py` tests shared functions (`fetch_year`, `normalize_percentages`) thoroughly
+- `unit/test_sql.py` skips duplicated tests and focuses on database-specific logic
+- `integration/` contains end-to-end `main()` workflow tests
+- Separation allows running `pytest tests/unit/` for fast feedback or `pytest tests/integration/` for full verification
+- Total: 54 tests with no redundancy
 
 ---
 
 ## Test Suite Breakdown
 
-### test_csv.py (25 tests)
+### test_csv.py (27 tests)
 
 #### TestFetchYear (10 tests)
 
@@ -427,6 +437,15 @@ def in_memory_db():
 | `test_v_school_metrics_joins_correctly` | JOIN produces expected output |
 | `test_v_school_summary_calculates_averages` | Aggregations are correct |
 
+#### TestMainIntegration (2 integration tests)
+
+Integration tests verify the complete `main()` workflow:
+
+| Test | What It Verifies |
+|------|------------------|
+| `test_main_creates_valid_database_with_correct_data` | Full pipeline: API → transform → database with tables, data, and working views |
+| `test_main_handles_partial_api_failures` | Graceful degradation when some API calls fail |
+
 ---
 
 ## Docker & Reproducibility
@@ -515,15 +534,29 @@ addopts = -v --tb=short
 The Makefile provides standardized entry points for common tasks. Anyone can run `make test` or `make docker-test` without reading documentation—this is especially important for reproducible workflows when evaluating code or models across different environments.
 
 ```makefile
-test:           # Run tests locally
+test:               # Run all tests
     pytest -v
 
-test-cov:       # Run with coverage report
+test-unit:          # Run unit tests only (fast)
+    pytest tests/unit/ -v
+
+test-integration:   # Run integration tests only
+    pytest tests/integration/ -v
+
+test-cov:           # Run with coverage report
     pytest --cov=. --cov-report=term-missing
 
-docker-test:    # Build and run in container
+docker-build:       # Build Docker image
+    docker build -t scorecard-tests .
+
+docker-test:        # Build and run in container
     docker build -t scorecard-tests .
     docker run --rm scorecard-tests
+
+clean:              # Clean up generated files
+    rm -rf __pycache__ .pytest_cache
+    find tests -type d -name __pycache__ -exec rm -rf {} +
+    rm -f *.csv *.db
 ```
 
 ### .dockerignore
@@ -543,9 +576,9 @@ Excludes from Docker image:
 |-----------|---------|
 | `api_to_csv.py` | Fetch → Transform → CSV |
 | `api_to_sql.py` | Fetch → Transform → SQLite with views |
-| `tests/test_csv.py` | 25 tests for shared logic + CSV-specific |
-| `tests/test_sql.py` | 25 tests for database operations |
+| `tests/test_csv.py` | 27 tests (25 unit + 2 integration) |
+| `tests/test_sql.py` | 27 tests (25 unit + 2 integration) |
 | `Dockerfile` | Reproducible test execution |
 | `Makefile` | Developer convenience commands |
 
-**Total**: 50 tests, ~2 seconds, fully offline, fully deterministic.
+**Total**: 54 tests (50 unit + 4 integration), ~2 seconds, fully offline, fully deterministic.
