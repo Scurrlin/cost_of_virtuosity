@@ -1,6 +1,6 @@
 # Technical Specification
 
-This document explains how every component of the codebase works, from data flow to testing strategy.
+From fetching the data from the College Scorecard API, to running the testing suite, this document explains how it all works.
 
 ---
 
@@ -19,12 +19,12 @@ This document explains how every component of the codebase works, from data flow
 
 ## Overview
 
-This project fetches educational metrics for 5 elite music conservatories from the U.S. Department of Education's College Scorecard API. It provides two output formats:
+This project pulls key metrics for 5 elite music conservatories from the U.S. Department of Education's College Scorecard API and provides one of two output formats:
 
-1. **CSV** - Flat file for spreadsheet analysis
+1. **CSV** - Flat file for spreadsheets, data visualization, and analysis
 2. **SQLite** - Normalized database with analytical views
 
-Both scripts share identical logic for API interaction and data transformation, ensuring consistency.
+Both scripts share identical logic for API interaction and data transformation.
 
 ---
 
@@ -61,7 +61,7 @@ Both scripts share identical logic for API interaction and data transformation, 
 
 ### api_to_csv.py
 
-**Purpose**: Fetch data and export to a timestamped CSV file.
+**Purpose**: Fetches data and exports it to a timestamped CSV file.
 
 **Entry Point**: `main()`
 
@@ -93,7 +93,7 @@ def main():
 
 ### api_to_sql.py
 
-**Purpose**: Fetch data and store in a normalized SQLite database with analytical views.
+**Purpose**: Fetches data and stores it in a normalized SQLite database with analytical views.
 
 **Entry Point**: `main()`
 
@@ -268,21 +268,20 @@ def build_filename(years, now=None):
 
 ### Philosophy
 
-1. **Offline Testing**: All API calls are mocked—tests never hit the real network
+1. **Offline Testing**: All API calls are mocked—tests and never hit the real network
 2. **Deterministic**: No randomness, no system time dependencies (injected via parameters)
-3. **Fast**: All 54 tests complete in ~2 seconds
-4. **Isolated**: Database tests use in-memory SQLite (`:memory:`), integration tests use temp directories
+3. **Isolated**: Database tests use in-memory SQLite (`:memory:`), integration tests use temp directories
 
 ### Test Organization
 
 ```
 tests/
 ├── __init__.py
-├── conftest.py              # Path setup for imports
+├── conftest.py                   # Path setup for imports
 ├── unit/
 │   ├── __init__.py
-│   ├── test_csv.py          # 25 unit tests for api_to_csv.py
-│   └── test_sql.py          # 25 unit tests for api_to_sql.py
+│   ├── test_csv.py               # 25 unit tests for api_to_csv.py
+│   └── test_sql.py               # 25 unit tests for api_to_sql.py
 └── integration/
     ├── __init__.py
     ├── test_csv_integration.py   # 2 integration tests for api_to_csv.py
@@ -307,8 +306,8 @@ tests/
 
 Tests API interaction with mocked `requests.get`:
 
-| Test | What It Verifies |
-|------|------------------|
+| Test | What It Tests |
+|------|---------------|
 | `test_happy_path_returns_dataframe_with_expected_columns` | Successful response returns correct DataFrame structure |
 | `test_maps_institution_names_correctly` | NAME_MAP is used for friendly institution names |
 | `test_extracts_metric_values_correctly` | All metric fields are correctly extracted |
@@ -339,8 +338,8 @@ def test_happy_path(self, monkeypatch):
 
 Tests data transformation logic:
 
-| Test | What It Verifies |
-|------|------------------|
+| Test | What It Tests |
+|------|---------------|
 | `test_converts_decimals_to_percentages` | 0.5 → 50.0 |
 | `test_rounds_to_two_decimal_places` | 0.12344 → 12.34 |
 | `test_handles_already_percentage_values` | 50.123 → 50.12 (not 5012.3) |
@@ -356,8 +355,8 @@ Tests data transformation logic:
 
 Tests filename generation:
 
-| Test | What It Verifies |
-|------|------------------|
+| Test | What It Tests |
+|------|---------------|
 | `test_generates_correct_format` | Format matches `music_school_data_2012_2022_20260128.csv` |
 | `test_handles_single_year` | Single year works: `2020_2020` |
 | `test_handles_non_contiguous_years` | Uses min/max: [2012, 2020] → `2012_2020` |
@@ -370,7 +369,7 @@ Tests filename generation:
 
 #### TestNormalizePercentages (1 sanity test)
 
-Single test to verify the SQL script's copy works:
+Single sanity check to verify the SQL script's normalize_percentages function works:
 - Full coverage is in `test_csv.py` since the function is identical
 
 #### TestBuildDbFilename (3 tests)
@@ -381,8 +380,8 @@ Same pattern as `build_filename` tests.
 
 Tests database schema creation:
 
-| Test | What It Verifies |
-|------|------------------|
+| Test | What It Tests |
+|------|---------------|
 | `test_creates_schools_table` | Table exists |
 | `test_creates_school_metrics_table` | Table exists |
 | `test_creates_indexes` | `idx_metrics_year`, `idx_metrics_school` exist |
@@ -402,8 +401,8 @@ def in_memory_db():
 
 #### TestInsertSchools (4 tests)
 
-| Test | What It Verifies |
-|------|------------------|
+| Test | What It Tests |
+|------|---------------|
 | `test_inserts_all_schools_from_name_map` | All 5 schools inserted |
 | `test_inserts_correct_unitids` | Federal IDs match NAME_MAP |
 | `test_inserts_correct_institution_names` | Names match NAME_MAP |
@@ -411,16 +410,16 @@ def in_memory_db():
 
 #### TestGetSchoolId (3 tests)
 
-| Test | What It Verifies |
-|------|------------------|
+| Test | What It Tests |
+|------|---------------|
 | `test_returns_correct_school_id` | Known unitid → integer school_id |
 | `test_returns_none_for_unknown_unitid` | Unknown unitid → None |
 | `test_returns_different_ids_for_different_schools` | Each school has unique ID |
 
 #### TestInsertMetrics (6 tests)
 
-| Test | What It Verifies |
-|------|------------------|
+| Test | What It Tests |
+|------|---------------|
 | `test_inserts_metrics_data` | Data appears in table |
 | `test_inserts_correct_values` | Values match input |
 | `test_handles_multiple_years` | Multiple years for same school |
@@ -430,8 +429,8 @@ def in_memory_db():
 
 #### TestViews (2 tests)
 
-| Test | What It Verifies |
-|------|------------------|
+| Test | What It Tests |
+|------|---------------|
 | `test_v_school_metrics_joins_correctly` | JOIN produces expected output |
 | `test_v_school_summary_calculates_averages` | Aggregations are correct |
 
@@ -441,8 +440,8 @@ def in_memory_db():
 
 Integration tests verify the complete `main()` workflow for CSV export:
 
-| Test | What It Verifies |
-|------|------------------|
+| Test | What It Tests |
+|------|---------------|
 | `test_main_produces_valid_csv_with_correct_data` | Full pipeline: API → transform → CSV file with correct content |
 | `test_main_handles_partial_api_failures` | Graceful degradation when some API calls fail |
 
@@ -452,8 +451,8 @@ Integration tests verify the complete `main()` workflow for CSV export:
 
 Integration tests verify the complete `main()` workflow for database creation:
 
-| Test | What It Verifies |
-|------|------------------|
+| Test | What It Tests |
+|------|---------------|
 | `test_main_creates_valid_database_with_correct_data` | Full pipeline: API → transform → database with tables, data, and working views |
 | `test_main_handles_partial_api_failures` | Graceful degradation when some API calls fail |
 
@@ -504,14 +503,6 @@ docker run --rm scorecard-tests
 # Or use Make
 make docker-test
 ```
-
-### What This Proves
-
-When tests pass in Docker:
-- No "works on my machine" issues
-- Clean environment with no hidden dependencies
-- Anyone can reproduce results with one command
-
 ---
 
 ## Configuration Files
@@ -542,7 +533,7 @@ addopts = -v --tb=short
 
 ### Makefile
 
-The Makefile provides standardized entry points for common tasks. Anyone can run `make test` or `make docker-test` without reading documentation—this is especially important for reproducible workflows when evaluating code or models across different environments.
+The Makefile provides an easy path to testing. If you're not exactly sure what to do or pressed for time, just run `make test` or `make docker-test` to start the test suite.
 
 ```makefile
 test:               # Run all tests
@@ -593,4 +584,4 @@ Excludes from Docker image:
 | `Dockerfile` | Reproducible test execution |
 | `Makefile` | Developer convenience commands |
 
-**Total**: 54 tests (50 unit + 4 integration), ~2 seconds, fully offline, fully deterministic.
+**Total**: 54 tests (50 unit + 4 integration), fully offline, fully deterministic.
