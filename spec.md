@@ -300,7 +300,7 @@ tests/
 
 ## Test Suite Breakdown
 
-### test_csv.py (27 tests)
+### test_csv.py (25 unit tests)
 
 #### TestFetchYear (10 tests)
 
@@ -365,7 +365,7 @@ Tests filename generation:
 
 ---
 
-### tests/unit/test_sql.py (25 unit tests)
+### test_sql.py (25 unit tests)
 
 #### TestNormalizePercentages (1 sanity test)
 
@@ -447,7 +447,7 @@ Integration tests verify the complete `main()` workflow for CSV export:
 
 ---
 
-### tests/integration/test_sql_integration.py (2 integration tests)
+### test_sql_integration.py (2 integration tests)
 
 Integration tests verify the complete `main()` workflow for database creation:
 
@@ -582,6 +582,6 @@ Excludes from Docker image:
 | `tests/unit/test_sql.py` | 25 unit tests |
 | `tests/integration/` | 4 integration tests (2 per script) |
 | `Dockerfile` | Reproducible test execution |
-| `Makefile` | Developer convenience commands |
+| `Makefile` | Developer convenience |
 
 **Total**: 54 tests (50 unit + 4 integration), fully offline, fully deterministic.
