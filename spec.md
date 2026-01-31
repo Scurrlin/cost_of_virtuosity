@@ -436,7 +436,7 @@ def in_memory_db():
 
 ---
 
-### tests/integration/test_csv_integration.py (2 integration tests)
+### test_csv_integration.py (2 integration tests)
 
 Integration tests verify the complete `main()` workflow for CSV export:
 
