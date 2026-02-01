@@ -35,8 +35,8 @@ college_scorecard_api/
 ├── Makefile             # Development convenience commands
 └── tests/
     ├── unit/
-    │   ├── test_csv.py      # Unit tests for CSV export (25 tests)
-    │   └── test_sql.py      # Unit tests for SQL database (25 tests)
+    │   ├── test_csv.py               # Unit tests for CSV export (25 tests)
+    │   └── test_sql.py               # Unit tests for SQL database (25 tests)
     └── integration/
         ├── test_csv_integration.py   # Integration tests for CSV (2 tests)
         └── test_sql_integration.py   # Integration tests for SQL (2 tests)
