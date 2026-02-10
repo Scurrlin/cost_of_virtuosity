@@ -68,6 +68,13 @@ body {
     font-weight: 500;
 }
 
+.toc a:visited,
+.toc a:active,
+.toc a:focus,
+.toc a:hover {
+    color: #3498db;
+}
+
 .toc a:hover {
     text-decoration: underline;
 }
