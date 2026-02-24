@@ -7,6 +7,14 @@ body {
     color: #333;
 }
 
+a:not(.back-to-top):not(.social-icon),
+a:not(.back-to-top):not(.social-icon):visited,
+a:not(.back-to-top):not(.social-icon):hover,
+a:not(.back-to-top):not(.social-icon):active,
+a:not(.back-to-top):not(.social-icon):focus {
+    color: #0000EE;
+}
+
 .container {
     max-width: 1440px;
     margin: 0 auto;
