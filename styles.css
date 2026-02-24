@@ -7,11 +7,11 @@ body {
     color: #333;
 }
 
-a:not(.back-to-top):not(.social-icon),
-a:not(.back-to-top):not(.social-icon):visited,
-a:not(.back-to-top):not(.social-icon):hover,
-a:not(.back-to-top):not(.social-icon):active,
-a:not(.back-to-top):not(.social-icon):focus {
+.content a,
+.content a:visited,
+.content a:hover,
+.content a:active,
+.content a:focus {
     color: #0000EE;
 }
 
