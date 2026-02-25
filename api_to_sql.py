@@ -144,15 +144,15 @@ def create_database(db_path="music_schools.db"):
         CREATE VIEW IF NOT EXISTS v_school_summary AS
 
         SELECT s.institution_name, s.unitid,
-            COUNT(m.year) as years_of_data,
-            MIN(m.year) as first_year,
-            MAX(m.year) as last_year,
-            ROUND(AVG(m.enrollment_total), 0) as avg_enrollment,
-            ROUND(AVG(m.admission_rate), 2) as avg_admission_rate,
-            ROUND(AVG(m.retention_rate_ft), 2) as avg_retention_rate,
-            ROUND(AVG(m.grad_rate_150), 2) as avg_grad_rate,
-            ROUND(AVG(m.tuition_fees), 2) as avg_tuition,
-            ROUND(AVG(m.avg_net_price), 2) as avg_net_price
+            COUNT(m.year) AS years_of_data,
+            MIN(m.year) AS first_year,
+            MAX(m.year) AS last_year,
+            ROUND(AVG(m.enrollment_total), 0) AS avg_enrollment,
+            ROUND(AVG(m.admission_rate), 2) AS avg_admission_rate,
+            ROUND(AVG(m.retention_rate_ft), 2) AS avg_retention_rate,
+            ROUND(AVG(m.grad_rate_150), 2) AS avg_grad_rate,
+            ROUND(AVG(m.tuition_fees), 2) AS avg_tuition,
+            ROUND(AVG(m.avg_net_price), 2) AS avg_net_price
         
         FROM schools s
         LEFT JOIN school_metrics m ON s.school_id = m.school_id
