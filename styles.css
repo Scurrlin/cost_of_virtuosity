@@ -195,12 +195,12 @@ body {
 .school-card h4 a:visited,
 .school-card h4 a:active,
 .school-card h4 a:focus {
-    color: white;
+    color: white !important;
     text-decoration: none;
 }
 
 .school-card h4 a:hover {
-    color: white;
+    color: white !important;
     text-decoration: underline;
     text-decoration-color: white;
 }
