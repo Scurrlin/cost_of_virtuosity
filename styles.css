@@ -191,7 +191,10 @@ body {
     font-size: 1.1em;
 }
 
-.school-card h4 a {
+.school-card h4 a,
+.school-card h4 a:visited,
+.school-card h4 a:active,
+.school-card h4 a:focus {
     color: white;
     text-decoration: none;
 }
