@@ -443,6 +443,12 @@ body {
     height: 100%;
 }
 
+.tableauPlaceholder {
+    width: 800px;
+    height: 627px;
+    max-width: 100%;
+}
+
 /* Hide static images on desktop */
 .mobile-static-image {
     display: none;

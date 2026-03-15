@@ -4,11 +4,6 @@ function isMobileDevice() {
 }
 
 function initTableauViz(vizId) {
-    // Show static images on mobile
-    if (isMobileDevice()) {
-        return;
-    }
-    
     const divElement = document.getElementById(vizId);
     if (divElement) {
         const vizElement = divElement.getElementsByTagName('object')[0];
@@ -39,8 +34,20 @@ const dashboardIds = [
 ];
 
 function initAllTableauViz() {
+    if (isMobileDevice()) return;
+
+    const observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                initTableauViz(entry.target.id);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { rootMargin: '1500px' });
+
     dashboardIds.forEach(function(id) {
-        initTableauViz(id);
+        const el = document.getElementById(id);
+        if (el) observer.observe(el);
     });
 }
 
