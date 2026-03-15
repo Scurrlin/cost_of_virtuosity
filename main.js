@@ -38,9 +38,26 @@ const dashboardIds = [
     'viz1757282252334'   // Total Enrollment 2022
 ];
 
-function initAllTableauViz() {
+function observeTableauViz() {
+    if (isMobileDevice()) return;
+
+    if (!('IntersectionObserver' in window)) {
+        dashboardIds.forEach(function(id) { initTableauViz(id); });
+        return;
+    }
+
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                initTableauViz(entry.target.id);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { rootMargin: '200px' });
+
     dashboardIds.forEach(function(id) {
-        initTableauViz(id);
+        var el = document.getElementById(id);
+        if (el) observer.observe(el);
     });
 }
 
@@ -80,5 +97,5 @@ function copyCode(button, codeId) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    initAllTableauViz();
+    observeTableauViz();
 });

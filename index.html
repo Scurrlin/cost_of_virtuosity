@@ -20,12 +20,51 @@
     <meta name="twitter:description" content="The Cost of Virtuosity">
     <meta name="twitter:image" content="https://public.tableau.com/static/images/Ac/AcceptanceDash/AcceptanceDash/1.png">
     
-    <!-- Fonts (self-hosted) -->
-    <link rel="stylesheet" href="vendor/fonts/source-serif-pro/source-serif-pro.css">
+    <!-- Fonts (inlined to eliminate a network request) -->
+    <link rel="preload" href="vendor/fonts/source-serif-pro/SourceSerifPro-Regular.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="vendor/fonts/source-serif-pro/SourceSerifPro-SemiBold.woff2" as="font" type="font/woff2" crossorigin>
+    <style>
+        @font-face {
+            font-family: 'Source Serif Pro';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url('vendor/fonts/source-serif-pro/SourceSerifPro-Regular.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'Source Serif Pro';
+            font-style: italic;
+            font-weight: 400;
+            font-display: swap;
+            src: url('vendor/fonts/source-serif-pro/SourceSerifPro-Italic.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'Source Serif Pro';
+            font-style: normal;
+            font-weight: 600;
+            font-display: swap;
+            src: url('vendor/fonts/source-serif-pro/SourceSerifPro-SemiBold.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'Source Serif Pro';
+            font-style: italic;
+            font-weight: 600;
+            font-display: swap;
+            src: url('vendor/fonts/source-serif-pro/SourceSerifPro-SemiBoldItalic.woff2') format('woff2');
+        }
+        @font-face {
+            font-family: 'Source Serif Pro';
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+            src: url('vendor/fonts/source-serif-pro/SourceSerifPro-Bold.woff2') format('woff2');
+        }
+    </style>
     <link rel="stylesheet" href="styles.css">
     
-    <!-- Prism.js for syntax highlighting (self-hosted) -->
-    <link rel="stylesheet" href="vendor/prism/prism-tomorrow.min.css">
+    <!-- Prism.js for syntax highlighting (deferred — not needed for initial render) -->
+    <link rel="stylesheet" href="vendor/prism/prism-tomorrow.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="vendor/prism/prism-tomorrow.min.css"></noscript>
 </head>
 
 <body id="top">
