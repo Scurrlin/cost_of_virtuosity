@@ -25,18 +25,21 @@ const dashboardIds = [
     'viz1757276102353',  // Acceptance Rates
     'viz1757276138501',  // Retention Rates
     'viz1757276208403',  // Graduation Rates
-    'viz1760800365068',  // Acceptance Rates 2022
-    'viz1760800437240',  // Retention Rates 2022
-    'viz1760800715935',  // Graduation Rates 2022
     'viz1757276451152',  // Tuition w/o Curtis
     'viz1757276474042',  // Tuition (All institutions)
     'viz1757276493141',  // Average Net Price
-    'viz1760800044820',  // Tuition Cost 2022
-    'viz1760799814627',  // Average Net Price 2022
     'viz1757276660099',  // Enrollment w/o Berklee
     'viz1757276680506',  // Enrollment (All institutions)
+
+    /*
+    'viz1760800365068',  // Acceptance Rates 2022
+    'viz1760800437240',  // Retention Rates 2022
+    'viz1760800715935',  // Graduation Rates 2022
+    'viz1760800044820',  // Tuition Cost 2022
+    'viz1760799814627',  // Average Net Price 2022
     'viz1757282252334'   // Total Enrollment 2022
-];
+    */
+];  
 
 function initAllTableauViz() {
     dashboardIds.forEach(function(id) {
