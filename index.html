@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Cost of Virtuosity</title>
     <link rel="icon" type="image/png" href="logo.png">
     
@@ -39,7 +39,7 @@
             <div class="subtitle">Exploring Enrollment and Financial Trends in Elite U.S. Music Schools (2012–2022)</div>
         </div>
         
-        <div class="content">
+        <main class="content">
             <!-- Overture -->
             <section class="section">
                 <h2>Overture</h2>
@@ -84,21 +84,16 @@
                 <p>As previously stated, this analysis uses the U.S. Department of Education's College Scorecard API to examine longitudinal trends across five elite music conservatories. The specific metrics below were chosen to provide an unbiased representation of how costs and enrollment have changed from 2012 to 2022.</p>
 
                 <div class="methodology">
-                    <h4>Data Collection</h4>
+                    <h3>Data Collection</h3>
                     
                     <p>I used a Python script <strong>(api_to_csv.py)</strong> to extract the following data for all five institutions. I also included another script <strong>(api_to_sql.py)</strong> to extract the data and store it in a SQLite database. You can view the code for both scripts by clicking the buttons below.</p>
                     
                     <ul>
                         <li><strong>Acceptance Rate:</strong> The percentage of applicants who were admitted in a given year (admissions.admission_rate.overall).</li>
-                        <br>
                         <li><strong>Retention Rate:</strong> The share of first-time, full-time undergraduates who return the following year (student.retention_rate.four_year.full_time).</li>
-                        <br>
                         <li><strong>Graduation Rate:</strong> The proportion of full-time, first-time undergraduates who complete a degree within 6 years (completion.completion_rate_4yr_150nt).</li>
-                        <br>
                         <li><strong>Tuition:</strong> The published in-state tuition and fees for full-time undergraduates (cost.tuition.in_state).</li>
-                        <br>
                         <li><strong>Average Net Price:</strong> The average annual cost of attendance for full-time undergraduates after grants and scholarships (cost.avg_net_price.private).</li>
-                        <br>
                         <li><strong>Total Enrollment:</strong> The number of students enrolled for credit at the institution across all programs (student.size).</li>
                     </ul>
                     
@@ -634,16 +629,12 @@ if __name__ == "__main__":
                 <p>Unlike traditional liberal arts institutions, elite music schools must balance artistic development with academic rigor. Music being an inherently individual pursuit means students will spend a significant amount of time studying and practicing on their own compared to students at more traditional colleges and universities. This solitude, combined with the fact that a student’s most important class is an hour-long weekly 1-on-1 lesson with their primary professor, creates a unique, high-pressure environment. This sustained pressure, exacerbated by the minimal prospects for economic stability after graduation (when compared to other degree programs), leads to increased volatility across retention and graduation metrics.</p>
 
                 <div class="key-findings">
-                    <h4>Key Findings Overview</h4>
+                    <h3>Key Findings Overview</h3>
                     <ul>
                         <li>Acceptance rates vary dramatically and are influenced significantly by reputation, application demand, and institutional philosophy.</li>
-                        <br>
                         <li>Despite trends in acceptance rates being fairly stagnant across the board, all percentages are trending up in recent years. This coupled with flat or even declining enrollment (more on that later) indicates a possible downtrend in demand for elite music degrees.</li>
-                        <br>
                         <li>Retention rates are very consistent for all schools, but there is a strong correlation between a low acceptance rate and high retention rate. <strong>To put it simply, the harder it is to get in, the more likely students are to come back.</strong></li>
-                        <br>
                         <li>Graduation rates are all over the place with smaller schools having a wider variance. <strong>For example, Curtis went from a 100% graduation rate in 2013 to a 53.85% graduation rate in 2014.</strong></li>
-                        <br>
                         <li>The 2022 snapshot provides further evidence that as acceptance rates go lower, retention and graduation rates go up.</li>
                     </ul>
                 </div>
@@ -770,11 +761,8 @@ if __name__ == "__main__":
                     <h4>Key Observations About Each School</h4>
                     <ul>
                         <li><strong>Berklee:</strong> Large student populations can negatively affect outcome metrics even when an institution has a massive market share.</li>
-                        <br>
                         <li><strong>Juilliard:</strong> Extremely selective admissions practices yield exceptional retention and graduation outcomes.</li>
-                        <br>
                         <li><strong>Curtis:</strong> Even with ultra-selective admissions processes and guaranteed scholarships, small schools are still prone to wide swings in outcome metrics.</li>
-                        <br>
                         <li><strong>NEC & MSM:</strong> Mid-sized conservatories with reasonable admissions standards have the most stable and consistent outcome trends.</li>
                     </ul>
                 </div>
@@ -896,14 +884,11 @@ if __name__ == "__main__":
                 <p>The financial landscape of American music education faces unique challenges compared to other specialized colleges. Music schools rely heavily on donations and require significant investment into individual instruction, specialized facilities, and performance opportunities to support their students. Given the high variance in ROI on music degrees, conservatories are especially susceptible to inflation and weakening macroeconomic conditions.</p>
 
                 <div class="key-findings">
-                    <h4>Key Findings Overview</h4>
+                    <h3>Key Findings Overview</h3>
                     <ul>
                         <li>Before 2012, tuition costs for NEC, MSM, and Juilliard were all under $40,000. <strong>By 2022, all were well above $50,000.</strong></li>
-                        <br>
                         <li>Scholarship-heavy models show that tuition costs can be mitigated, but this only works for smaller schools with substantial donor support.</li>
-                        <br>
                         <li>Even with a subsidized tuition approach like Curtis's, high net prices for all schools reveal that studying music in major cities is becoming prohibitively expensive.</li>
-                        <br>
                         <li>Tuition increases are outpacing both inflation and career prospects across the industry. <strong>If this trend continues, music education will be considered even more of a luxury than it already is.</strong></li>
                     </ul>
                 </div>
@@ -1029,13 +1014,9 @@ if __name__ == "__main__":
                     <h4>Key Observations About Each School</h4>
                     <ul>
                         <li><strong>Berklee:</strong> Despite market dominance and substantial growth, large institutions can choose to keep tuition prices accessible.</li>
-                        <br>
                         <li><strong>Juilliard:</strong> Elite programs with strong brand recognition can command premium prices for now, but tuition growth of $35,140 to $52,500 over 10 years like Juilliard's necessitates career outcome transparency.</li>
-                        <br>
                         <li><strong>Curtis:</strong> Guaranteed scholarships are an effective solution to rising tuition costs, but their efficacy is limited by the rampant cost of living crisis affecting major cities across the United States.</li>
-                        <br>
                         <li><strong>NEC:</strong> Even with 45% tuition growth over ten years, larger conservatories like NEC can choose to take steps to lower net prices for their students.</li>
-                        <br>
                         <li><strong>MSM:</strong> Violent swings in average net price caused by unforeseen events like the COVID-19 pandemic will continue to worsen until a sustainable model is widely adopted. <strong>For example, MSM's average net price dropped from $54,902 in 2019 to just $19,111 in 2020.</strong></li>
                     </ul>
                 </div>
@@ -1120,7 +1101,7 @@ if __name__ == "__main__":
                 <p>Like student outcomes and tuition costs, enrollment for American music schools has its fair share of eccentricities. Rather than discuss the strong implications of the enrollment data here, I'll save those insights for my overall conclusions presented in the next section. Besides, the final visualization comparing the enrollment numbers for all five institutions in 2022 is genuinely hilarious... and I'd hate to delay your enjoyment of that any longer than necessary.</p>
 
                 <div class="key-findings">
-                    <h4>Key Findings Overview</h4>
+                    <h3>Key Findings Overview</h3>
                     <ul>
                         <li><strong>One of these things is not like the others...</strong></li>
                     </ul>
@@ -1248,9 +1229,7 @@ if __name__ == "__main__":
                 
                 <ul>
                     <li><strong>New England Conservatory's tuition grew from $38,455 to $55,910 (+45.4%)</strong></li>
-                    <br>
                     <li><strong>Juilliard's tuition grew from $35,140 to $52,500 (+49.4%)</strong></li>
-                    <br>
                     <li><strong>MSM's tuition grew from $35,140 to $52,550 (+49.5%)</strong></li>
                 </ul>
 
@@ -1258,9 +1237,7 @@ if __name__ == "__main__":
 
                 <ul>
                     <li><strong>New England Conservatory's tuition will be $81,293</strong></li>
-                    <br>
                     <li><strong>Juilliard's tuition will be $78,435</strong></li>
-                    <br>
                     <li><strong>MSM's tuition will be $78,562 </strong></li>
                 </ul>
 
@@ -1294,7 +1271,6 @@ if __name__ == "__main__":
                     
                 <ul>
                     <li><strong>Large contemporary institutions like Berklee (and to a lesser extent MSM & NEC) that embrace modern genres and support consistent career pathways.</strong></li>
-                    <br>
                     <li><strong>Small, elite conservatories like Curtis and Juilliard that maintain traditional excellence through extremely selective admissions processes.</strong></li>
                 </ul>
 
@@ -1322,7 +1298,7 @@ if __name__ == "__main__":
                     <strong>Author:</strong> Sean Currlin
                 </p>
             </div>
-        </div>
+        </main>
         
         <footer class="footer">
             <div class="footer-content">
@@ -1335,17 +1311,17 @@ if __name__ == "__main__":
                     <a href="#top" class="back-to-top">Back to Top ↑</a>
                 </div>
                 <div class="socials">
-                    <a href="https://linkedin.com/in/seancurrlin" target="_blank" rel="noopener noreferrer" class="social-icon">
+                    <a href="https://linkedin.com/in/seancurrlin" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="LinkedIn">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                         </svg>
                     </a>
-                    <a href="https://github.com/Scurrlin" target="_blank" rel="noopener noreferrer" class="social-icon">
+                    <a href="https://github.com/Scurrlin" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="GitHub">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                         </svg>
                     </a>
-                    <a href="https://open.spotify.com/artist/1yes1OaMmV9w58iMeggawH" target="_blank" rel="noopener noreferrer" class="social-icon">
+                    <a href="https://open.spotify.com/artist/1yes1OaMmV9w58iMeggawH" target="_blank" rel="noopener noreferrer" class="social-icon" aria-label="Spotify">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.42 1.56-.299.421-1.02.599-1.559.3z"/>
                         </svg>

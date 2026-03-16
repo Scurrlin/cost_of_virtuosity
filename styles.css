@@ -190,6 +190,13 @@ body {
     margin: 25px 0;
 }
 
+.methodology h3 {
+    color: #333;
+    font-size: 1.2em;
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
 .school-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -257,6 +264,25 @@ body {
     border-left: 4px solid #27ae60;
     padding: 20px;
     margin: 25px 0;
+}
+
+.key-findings h3 {
+    color: #333;
+    font-size: 1.2em;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.methodology ul li,
+.key-findings ul li,
+.section > ul > li {
+    margin-bottom: 1em;
+}
+
+.methodology ul li:last-child,
+.key-findings ul li:last-child,
+.section > ul > li:last-child {
+    margin-bottom: 0;
 }
 
 .data-source {
@@ -470,6 +496,13 @@ body {
     width: 100%;
     max-width: 800px;
     height: auto;
+}
+
+/* Landscape phones: remove fixed min-height since Tableau never loads */
+@media (max-height: 500px) and (orientation: landscape) {
+    .tableauPlaceholder {
+        min-height: auto;
+    }
 }
 
 /* Mobile Optimizations */
