@@ -443,23 +443,22 @@ body {
     height: 100%;
 }
 
-/* Tableau viz overlays the static placeholder once loaded */
-.tableauPlaceholder .tableauViz {
+/* Hold card shape until Tableau viz renders */
+.tableauPlaceholder {
+    min-height: 627px;
+}
+
+/* Static image sits behind the viz as a background placeholder */
+.tableauPlaceholder .mobile-static-image {
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 1;
-}
-
-/* Static image placeholders (visible on all viewports until viz renders on top) */
-.mobile-static-image {
-    display: block;
-    overflow-x: auto;
-    overflow-y: hidden;
+    width: 100%;
+    z-index: 0;
     border-radius: 0 0 8px 8px;
 }
 
-.mobile-static-image img {
+.tableauPlaceholder .mobile-static-image img {
     display: block;
     width: 100%;
     max-width: 800px;
