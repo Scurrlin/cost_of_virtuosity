@@ -14,6 +14,7 @@ function initTableauViz(vizId) {
 
     vizElement.style.width = '800px';
     vizElement.style.height = '627px';
+    vizElement.className = 'tableauViz';
 
     var scriptElement = document.createElement('script');
     scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
@@ -50,7 +51,7 @@ function initAllTableauViz() {
                 observer.unobserve(entry.target);
             }
         });
-    }, { rootMargin: '1000px' });
+    }, { rootMargin: '1500px' });
 
     for (var i = 1; i < dashboardIds.length; i++) {
         var el = document.getElementById(dashboardIds[i]);
