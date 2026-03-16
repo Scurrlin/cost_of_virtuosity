@@ -19,8 +19,6 @@ function initTableauViz(vizId) {
     scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
     vizElement.parentNode.insertBefore(scriptElement, vizElement);
 
-    var placeholder = divElement.querySelector('.mobile-static-image');
-    if (placeholder) placeholder.style.display = 'none';
 }
 
 const dashboardIds = [

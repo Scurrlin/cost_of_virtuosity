@@ -443,7 +443,15 @@ body {
     height: 100%;
 }
 
-/* Static image placeholders (visible on all viewports, hidden once Tableau viz loads) */
+/* Tableau viz overlays the static placeholder once loaded */
+.tableauPlaceholder .tableauViz {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+/* Static image placeholders (visible on all viewports until viz renders on top) */
 .mobile-static-image {
     display: block;
     overflow-x: auto;
