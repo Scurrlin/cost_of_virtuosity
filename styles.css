@@ -443,23 +443,19 @@ body {
     height: 100%;
 }
 
-/* Static dashboard images (always visible, used for 2022 snapshot dashboards) */
-.static-dashboard-image {
+/* Static image placeholders (visible on all viewports, hidden once Tableau viz loads) */
+.mobile-static-image {
+    display: block;
     overflow-x: auto;
     overflow-y: hidden;
     border-radius: 0 0 8px 8px;
 }
 
-.static-dashboard-image img {
+.mobile-static-image img {
     display: block;
     width: 100%;
     max-width: 800px;
     height: auto;
-}
-
-/* Hide static images on desktop */
-.mobile-static-image {
-    display: none;
 }
 
 /* Mobile Optimizations */

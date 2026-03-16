@@ -4,47 +4,60 @@ function isMobileDevice() {
 }
 
 function initTableauViz(vizId) {
-    // Show static images on mobile
-    if (isMobileDevice()) {
-        return;
-    }
-    
-    const divElement = document.getElementById(vizId);
-    if (divElement) {
-        const vizElement = divElement.getElementsByTagName('object')[0];
-        vizElement.style.width = '800px';
-        vizElement.style.height = '627px';
-        
-        const scriptElement = document.createElement('script');
-        scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
-        vizElement.parentNode.insertBefore(scriptElement, vizElement);
-    }
+    if (isMobileDevice()) return;
+
+    var divElement = document.getElementById(vizId);
+    if (!divElement) return;
+
+    var vizElement = divElement.getElementsByTagName('object')[0];
+    if (!vizElement) return;
+
+    vizElement.style.width = '800px';
+    vizElement.style.height = '627px';
+
+    var scriptElement = document.createElement('script');
+    scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+    vizElement.parentNode.insertBefore(scriptElement, vizElement);
+
+    var placeholder = divElement.querySelector('.mobile-static-image');
+    if (placeholder) placeholder.style.display = 'none';
 }
 
 const dashboardIds = [
     'viz1757276102353',  // Acceptance Rates
     'viz1757276138501',  // Retention Rates
     'viz1757276208403',  // Graduation Rates
-    'viz1757276451152',  // Tuition w/o Curtis
-    'viz1757276474042',  // Tuition (All institutions)
-    'viz1757276493141',  // Average Net Price
-    'viz1757276660099',  // Enrollment w/o Berklee
-    'viz1757276680506',  // Enrollment (All institutions)
-
-    /*
     'viz1760800365068',  // Acceptance Rates 2022
     'viz1760800437240',  // Retention Rates 2022
     'viz1760800715935',  // Graduation Rates 2022
+    'viz1757276451152',  // Tuition w/o Curtis
+    'viz1757276474042',  // Tuition (All institutions)
+    'viz1757276493141',  // Average Net Price
     'viz1760800044820',  // Tuition Cost 2022
     'viz1760799814627',  // Average Net Price 2022
-    'viz1757282252334'   // Total Enrollment 2022
-    */
+    'viz1757276660099',  // Enrollment w/o Berklee
+    'viz1757276680506',  // Enrollment (All institutions)
+    'viz1757282252334',  // Total Enrollment 2022
 ];  
 
 function initAllTableauViz() {
-    dashboardIds.forEach(function(id) {
-        initTableauViz(id);
-    });
+    if (isMobileDevice()) return;
+
+    initTableauViz(dashboardIds[0]);
+
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                initTableauViz(entry.target.id);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { rootMargin: '1000px' });
+
+    for (var i = 1; i < dashboardIds.length; i++) {
+        var el = document.getElementById(dashboardIds[i]);
+        if (el) observer.observe(el);
+    }
 }
 
 function copyCode(button, codeId) {
