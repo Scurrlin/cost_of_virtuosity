@@ -42,8 +42,6 @@ const dashboardIds = [
 function initAllTableauViz() {
     if (isMobileDevice()) return;
 
-    initTableauViz(dashboardIds[0]);
-
     var observer = new IntersectionObserver(function(entries) {
         entries.forEach(function(entry) {
             if (entry.isIntersecting) {
@@ -53,7 +51,7 @@ function initAllTableauViz() {
         });
     }, { rootMargin: '1500px' });
 
-    for (var i = 1; i < dashboardIds.length; i++) {
+    for (var i = 0; i < dashboardIds.length; i++) {
         var el = document.getElementById(dashboardIds[i]);
         if (el) observer.observe(el);
     }
