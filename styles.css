@@ -449,6 +449,12 @@ body {
     z-index: 0;
 }
 
+/* Tableau viz renders on top of the placeholder */
+.tableauPlaceholder .tableauViz {
+    position: relative;
+    z-index: 1;
+}
+
 /* Static image sits behind the viz as a background placeholder */
 .tableauPlaceholder .mobile-static-image {
     position: absolute;
