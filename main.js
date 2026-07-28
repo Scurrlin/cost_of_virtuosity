@@ -3,6 +3,33 @@ function isMobileDevice() {
     return window.innerWidth <= 450;
 }
 
+function initThemeToggle() {
+    var toggle = document.getElementById('theme-toggle');
+    if (!toggle) return;
+
+    // Light mode is intentionally the default on every page load.
+    document.documentElement.removeAttribute('data-theme');
+
+    function updateToggle(isDark) {
+        toggle.setAttribute('aria-pressed', String(isDark));
+        toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+    }
+
+    updateToggle(false);
+
+    toggle.addEventListener('click', function() {
+        var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+        if (isDark) {
+            document.documentElement.removeAttribute('data-theme');
+        } else {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+
+        updateToggle(!isDark);
+    });
+}
+
 function initTableauViz(vizId) {
     if (isMobileDevice()) return;
 
@@ -93,5 +120,6 @@ function copyCode(button, codeId) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    initThemeToggle();
     initAllTableauViz();
 });
