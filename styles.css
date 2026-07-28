@@ -279,7 +279,7 @@ body {
     border-radius: 8px;
     overflow-x: auto;
     overflow-y: hidden;
-    background: var(--color-dashboard-header);
+    background: var(--color-dashboard-surface);
     box-shadow: var(--shadow-card);
     width: 800px;
     max-width: 100%;
