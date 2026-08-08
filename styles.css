@@ -477,7 +477,9 @@ body {
     transition: all 0.2s ease;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 4px;
+    min-width: 65px;
 }
 
 .copy-button:hover {
