@@ -26,13 +26,20 @@ This project uses data from the U.S. Department of Education's College Scorecard
 ## Project Structure
 
 ```
-college_scorecard_api/
+cost_of_virtuosity/
+├── index.html           # Published report
+├── styles.css           # Report styling
+├── main.js              # Report interactions and Tableau loading
+├── assets/              # Local visualization SVGs
+├── vendor/              # Self-hosted fonts and syntax highlighting
 ├── api_to_csv.py        # Fetch data and export to CSV
 ├── api_to_sql.py        # Fetch data and store in SQLite database
+├── spec.md              # Technical specification
 ├── requirements.txt     # Python dependencies
 ├── pytest.ini           # Pytest configuration
 ├── Dockerfile           # Containerized test execution
 ├── Makefile             # Development convenience commands
+├── .github/workflows/pages.yml  # GitHub Pages deployment
 └── tests/
     ├── unit/
     │   ├── test_csv.py               # Unit tests for CSV export (25 tests)
@@ -108,7 +115,7 @@ pytest --cov=. --cov-report=term-missing
 
 ### Run Tests in Docker
 
-For reproducible execution in a controlled environment:
+For isolated execution in a controlled environment:
 
 ```bash
 # Build and run tests in container
@@ -139,9 +146,9 @@ The SQL script creates a normalized database with:
 - `v_metrics_yoy` - Year-over-year comparisons
 - `v_school_summary` - Summary statistics per school
 
-Example query:
+After running `python api_to_sql.py`, use the filename printed after `Database saved as:` in place of `GENERATED_DB_FILE`:
 ```bash
-sqlite3 -header -column music_schools_20260128.db "SELECT * FROM v_school_summary;"
+sqlite3 -header -column GENERATED_DB_FILE "SELECT * FROM v_school_summary;"
 ```
 
 ## Dependencies
