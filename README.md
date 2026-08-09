@@ -27,19 +27,19 @@ This project uses data from the U.S. Department of Education's College Scorecard
 
 ```
 cost_of_virtuosity/
-├── index.html           # Published report
-├── styles.css           # Report styling
-├── main.js              # Report interactions and Tableau loading
-├── assets/              # Local visualization SVGs
-├── vendor/              # Self-hosted fonts and syntax highlighting
-├── api_to_csv.py        # Fetch data and export to CSV
-├── api_to_sql.py        # Fetch data and store in SQLite database
-├── spec.md              # Technical specification
-├── requirements.txt     # Python dependencies
-├── pytest.ini           # Pytest configuration
-├── Dockerfile           # Containerized test execution
-├── Makefile             # Development convenience commands
-├── .github/workflows/pages.yml  # GitHub Pages deployment
+├── index.html                        # Published report
+├── styles.css                        # Report styling
+├── main.js                           # Report interactions and Tableau loading
+├── assets/                           # Local visualization SVGs
+├── vendor/                           # Self-hosted fonts and syntax highlighting
+├── api_to_csv.py                     # Fetch data and export to CSV
+├── api_to_sql.py                     # Fetch data and store in SQLite database
+├── spec.md                           # Technical specification
+├── requirements.txt                  # Python dependencies
+├── pytest.ini                        # Pytest configuration
+├── Dockerfile                        # Containerized test execution
+├── Makefile                          # Development convenience commands
+├── .github/workflows/pages.yml       # GitHub Pages deployment
 └── tests/
     ├── unit/
     │   ├── test_csv.py               # Unit tests for CSV export (25 tests)
