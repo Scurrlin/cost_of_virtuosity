@@ -641,6 +641,11 @@ body {
         font-size: 0.9em;
         line-height: 1.6;
     }
+
+    /* Preserve the mobile dashboard shell in narrow landscape layouts. */
+    .tableauPlaceholder {
+        min-height: 627px;
+    }
     
     .header {
         padding: 40px 20px;
