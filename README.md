@@ -12,7 +12,7 @@ This project uses data from the U.S. Department of Education's College Scorecard
 
 ## 📊 **[View Report →](https://scurrlin.github.io/cost_of_virtuosity/)**
 
-![Dashboard Preview](https://public.tableau.com/static/images/Ac/AcceptanceDash/AcceptanceDash/1.png)
+![Dashboard Preview](assets/Acceptance.svg)
 
 ## Key Metrics Tracked
 

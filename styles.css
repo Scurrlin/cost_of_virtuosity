@@ -605,8 +605,8 @@ body {
     z-index: 1;
 }
 
-/* Static image sits behind the viz as a background placeholder */
-.tableauPlaceholder .mobile-static-image {
+/* Local SVG sits behind the viz as a background placeholder */
+.tableauPlaceholder .viz-placeholder {
     position: absolute;
     top: 0;
     left: 0;
@@ -615,7 +615,7 @@ body {
     border-radius: 0 0 8px 8px;
 }
 
-.tableauPlaceholder .mobile-static-image img {
+.tableauPlaceholder .viz-placeholder img {
     display: block;
     width: 100%;
     max-width: 800px;
@@ -693,15 +693,15 @@ body {
         display: none !important;
     }
     
-    /* Show static images on mobile */
-    .mobile-static-image {
+    /* Keep local SVG placeholders visible on mobile */
+    .viz-placeholder {
         display: block !important;
         height: 627px;
         overflow: auto;
         border-radius: 0 0 8px 8px;
     }
     
-    .mobile-static-image img {
+    .viz-placeholder img {
         width: auto;
         height: auto;
         min-width: 800px;
