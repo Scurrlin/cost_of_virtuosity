@@ -34,6 +34,8 @@ cost_of_virtuosity/
 ├── vendor/                           # Self-hosted fonts and syntax highlighting
 ├── api_to_csv.py                     # Fetch data and export to CSV
 ├── api_to_sql.py                     # Fetch data and store in SQLite database
+├── api_to_raw_csv.py                 # Export raw API values for a later Snowflake clean
+├── SNOWFLAKE.md                      # Preparation for independent cleaning and manual validation
 ├── spec.md                           # Technical specification
 ├── requirements.txt                  # Python dependencies
 ├── pytest.ini                        # Pytest configuration
@@ -43,7 +45,8 @@ cost_of_virtuosity/
 └── tests/
     ├── unit/
     │   ├── test_csv.py               # Unit tests for CSV export (25 tests)
-    │   └── test_sql.py               # Unit tests for SQL database (25 tests)
+    │   ├── test_sql.py               # Unit tests for SQL database (25 tests)
+    │   └── test_raw_csv.py           # Unit tests for raw CSV export
     └── integration/
         ├── test_csv_integration.py   # Integration tests for CSV (2 tests)
         └── test_sql_integration.py   # Integration tests for SQL (2 tests)
@@ -82,11 +85,14 @@ python api_to_csv.py
 
 # Export to SQLite database
 python api_to_sql.py
+
+# Export raw API values for a later Snowflake SQL clean
+python api_to_raw_csv.py
 ```
 
 ## Testing
 
-The project includes a comprehensive test suite with 54 tests covering:
+The project includes a comprehensive test suite covering:
 
 - **API interaction** - Mocked requests for offline, deterministic testing
 - **Error handling** - Timeouts, connection errors, invalid responses

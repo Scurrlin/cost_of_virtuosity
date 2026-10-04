@@ -15,7 +15,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy source and tests
-COPY api_to_csv.py api_to_sql.py ./
+COPY api_to_csv.py api_to_sql.py api_to_raw_csv.py ./
 COPY pytest.ini ./
 COPY tests/ tests/
 
