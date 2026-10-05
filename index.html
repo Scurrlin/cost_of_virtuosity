@@ -783,13 +783,16 @@ if __name__ == "__main__":
                                 Copy
                             </button>
                         </summary>
-                        <pre><code id="sql-cleaned-code" class="language-sql">CREATE DATABASE COST_OF_VIRTUOSITY;
+                        <pre><code id="sql-cleaned-code" class="language-sql">--Create database and schemas
+CREATE DATABASE COST_OF_VIRTUOSITY;
 
 CREATE SCHEMA COST_OF_VIRTUOSITY.RAW;
 CREATE SCHEMA COST_OF_VIRTUOSITY.ANALYTICS;
 
+--Verify raw data ingestion
 DESCRIBE TABLE COST_OF_VIRTUOSITY.RAW.DATA;
 
+--Recreate Python cleaning logic in SQL
 CREATE OR REPLACE TABLE COST_OF_VIRTUOSITY.ANALYTICS.SCHOOL_METRICS AS
 
 SELECT
@@ -822,6 +825,7 @@ SELECT
 
 FROM COST_OF_VIRTUOSITY.RAW.DATA;
 
+-- Compare SQL-cleaned data against the Python-cleaned output
 WITH sql_cleaned AS (
     SELECT
         unitid,
@@ -850,6 +854,7 @@ python_cleaned AS (
     FROM COST_OF_VIRTUOSITY.ANALYTICS.PYTHON_DATA
 )
 
+-- Check for differences in either direction
 SELECT
     'sql_only' AS difference_source,
     differences.*
