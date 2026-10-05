@@ -35,7 +35,6 @@ cost_of_virtuosity/
 ├── api_to_csv.py                     # Fetch data and export to CSV
 ├── api_to_sql.py                     # Fetch data and store in SQLite database
 ├── api_to_raw_csv.py                 # Export raw API values for a later Snowflake clean
-├── SNOWFLAKE.md                      # Preparation for independent cleaning and manual validation
 ├── spec.md                           # Technical specification
 ├── requirements.txt                  # Python dependencies
 ├── pytest.ini                        # Pytest configuration

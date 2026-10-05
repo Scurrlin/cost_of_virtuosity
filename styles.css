@@ -146,7 +146,7 @@ body {
 .theme-toggle {
     position: fixed;
     top: 16px;
-    right: 16px;
+    right: max(16px, calc((100% - 1440px) / 2 + 16px));
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -161,13 +161,12 @@ body {
     font: inherit;
     cursor: pointer;
     z-index: 1000;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .theme-toggle:hover {
     background: var(--color-panel);
     box-shadow: var(--shadow-container);
-    transform: scale(1.08);
 }
 
 .theme-toggle:focus-visible {
@@ -310,6 +309,10 @@ body {
     font-size: 1.2em;
     margin-top: 30px;
     margin-bottom: 15px;
+}
+
+.methodology > h3:first-child {
+    margin-top: 0;
 }
 
 .school-grid {
