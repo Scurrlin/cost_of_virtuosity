@@ -605,7 +605,7 @@ if __name__ == "__main__":
 
                     <h3>Data Validation</h3>
                     
-                    <p>If you'd like to work through the data yourself, you can use the <strong>(api_to_raw_csv.py)</strong> script below to export the raw values for all five schools.</p>
+                    <p>If you'd like to work through the data yourself, you can use the <strong>(api_to_raw_csv.py)</strong> script below to export the raw values for all five schools. I've also included the SQL code for cleaning the data and comparing it to the CSV containing the Python cleaned values.</p>
 
                     <details class="code-section">
                         <summary>
@@ -771,6 +771,104 @@ if __name__ == "__main__":
         print("Error: Raw CSV export failed. Check the API key, connection, and output directory.")
         raise SystemExit(1)
 </code></pre>
+                    </details>
+
+                    <details class="code-section">
+                        <summary>
+                            📄 sql_cleaned.sql
+                            <button class="copy-button" onclick="copyCode(this, 'sql-cleaned-code')">
+                                <svg class="copy-icon" viewBox="0 0 24 24">
+                                    <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                                </svg>
+                                Copy
+                            </button>
+                        </summary>
+                        <pre><code id="sql-cleaned-code" class="language-sql">CREATE DATABASE COST_OF_VIRTUOSITY;
+
+CREATE SCHEMA COST_OF_VIRTUOSITY.RAW;
+CREATE SCHEMA COST_OF_VIRTUOSITY.ANALYTICS;
+
+DESCRIBE TABLE COST_OF_VIRTUOSITY.RAW.DATA;
+
+CREATE OR REPLACE TABLE COST_OF_VIRTUOSITY.ANALYTICS.SCHOOL_METRICS AS
+
+SELECT
+    ID AS UNITID,
+
+    CASE ID
+        WHEN 164748 THEN 'Berklee College of Music'
+        WHEN 192110 THEN 'The Juilliard School'
+        WHEN 167057 THEN 'New England Conservatory'
+        WHEN 192712 THEN 'Manhattan School of Music'
+        WHEN 211893 THEN 'Curtis Institute of Music'
+    END AS INSTITUTION_NAME,
+
+    YEAR,
+
+    STUDENT_SIZE AS enrollment_total,
+
+    ROUND(ADMISSIONS_ADMISSION_RATE_OVERALL * 100, 2)
+        AS admission_rate,
+
+    ROUND(STUDENT_RETENTION_RATE_FOUR_YEAR_FULL_TIME * 100, 2)
+        AS retention_rate_ft,
+
+    ROUND(COMPLETION_COMPLETION_RATE_4YR_150NT * 100, 2)
+        AS grad_rate_150,
+
+    COST_TUITION_IN_STATE AS tuition_fees,
+
+    COST_AVG_NET_PRICE_PRIVATE AS avg_net_price
+
+FROM COST_OF_VIRTUOSITY.RAW.DATA;
+
+WITH sql_cleaned AS (
+    SELECT
+        unitid,
+        institution_name AS institution,
+        year,
+        admission_rate,
+        avg_net_price,
+        enrollment_total,
+        grad_rate_150,
+        retention_rate_ft,
+        tuition_fees
+    FROM COST_OF_VIRTUOSITY.ANALYTICS.SCHOOL_METRICS
+),
+
+python_cleaned AS (
+    SELECT
+        unitid,
+        institution,
+        year,
+        admission_rate,
+        avg_net_price,
+        enrollment_total,
+        grad_rate_150,
+        retention_rate_ft,
+        tuition_fees
+    FROM COST_OF_VIRTUOSITY.ANALYTICS.PYTHON_DATA
+)
+
+SELECT
+    'sql_only' AS difference_source,
+    differences.*
+FROM (
+    SELECT * FROM sql_cleaned
+    EXCEPT
+    SELECT * FROM python_cleaned
+) AS differences
+
+UNION ALL
+
+SELECT
+    'python_only' AS difference_source,
+    differences.*
+FROM (
+    SELECT * FROM python_cleaned
+    EXCEPT
+    SELECT * FROM sql_cleaned
+) AS differences;</code></pre>
                     </details>
                 </div>
 
