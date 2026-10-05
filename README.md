@@ -43,7 +43,7 @@ cost_of_virtuosity/
 ├── .github/workflows/pages.yml       # GitHub Pages deployment
 └── tests/
     ├── unit/
-    │   ├── test_csv.py               # Unit tests for CSV export (25 tests)
+    │   ├── test_csv.py               # CSV export and API error logging tests (26 tests)
     │   ├── test_sql.py               # Unit tests for SQL database (25 tests)
     │   └── test_raw_csv.py           # Unit tests for raw CSV export
     └── integration/
@@ -89,12 +89,14 @@ python api_to_sql.py
 python api_to_raw_csv.py
 ```
 
+The Snowflake cleaning and comparison SQL is embedded in the **Data Validation** section of [index.html](index.html). Successful validation requires 55 rows in each table (5 schools × 11 years), no duplicate `(unitid, year)` keys, and no differences between the SQL-cleaned and Python-cleaned values.
+
 ## Testing
 
 The project includes a comprehensive test suite covering:
 
 - **API interaction** - Mocked requests for offline, deterministic testing
-- **Error handling** - Timeouts, connection errors, invalid responses
+- **Error handling** - Timeouts, connection errors, invalid responses, and API-key-safe error logging
 - **Data transformations** - Percentage conversion, edge cases
 - **Database operations** - Schema creation, CRUD, upserts, views
 - **Integration tests** - End-to-end `main()` workflow verification

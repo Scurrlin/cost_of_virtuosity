@@ -12,6 +12,7 @@ from datetime import datetime
 from unittest.mock import patch, Mock
 
 import api_to_csv as mod
+import api_to_sql as sql_mod
 
 
 # =============================================================================
@@ -193,17 +194,23 @@ class TestFetchYear:
 
         assert df.empty
 
-    # Test 8 (Error path): Returns empty DataFrame on HTTP error
-    def test_returns_empty_dataframe_on_http_error(self, monkeypatch):
-        monkeypatch.setattr(mod, "API_KEY", "fake-key")
+    # Test 8 (Error path): Returns empty DataFrame without logging the API key
+    @pytest.mark.parametrize("exporter", [mod, sql_mod], ids=["csv", "sql"])
+    def test_returns_empty_dataframe_on_http_error(self, exporter, monkeypatch, capsys):
+        monkeypatch.setattr(exporter, "API_KEY", "fake-key")
+        mock_response = requests.Response()
+        mock_response.status_code = 500
+        mock_response.url = f"{exporter.API}?api_key=fake-key"
 
-        with patch("api_to_csv.requests.get") as mock_get:
-            mock_response = Mock()
-            mock_response.raise_for_status.side_effect = requests.exceptions.HTTPError("500 Server Error")
-            mock_get.return_value = mock_response
-            df = mod.fetch_year([164748], 2020)
+        with patch.object(exporter.requests, "get", return_value=mock_response):
+            df = exporter.fetch_year([164748], 2020)
 
         assert df.empty
+        captured = capsys.readouterr()
+        assert "2020" in captured.out
+        assert "HTTPError" in captured.out
+        assert "fake-key" not in captured.out + captured.err
+        assert mock_response.url not in captured.out + captured.err
 
     # Test 9: Returns empty DataFrame on invalid JSON
     def test_returns_empty_dataframe_on_invalid_json(self, monkeypatch):

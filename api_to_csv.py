@@ -86,7 +86,7 @@ def fetch_year(institution_ids, year):
         res.raise_for_status()
         js = res.json()
     except requests.exceptions.RequestException as ex:
-        print(f"Error fetching data for year {year}: {ex}")
+        print(f"Error fetching data for year {year}: {ex.__class__.__name__}")
         return pd.DataFrame()
     except ValueError as ex:
         print(f"Error parsing JSON response for year {year}: {ex}")

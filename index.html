@@ -214,7 +214,7 @@ def fetch_year(institution_ids, year):
         res.raise_for_status()
         js = res.json()
     except requests.exceptions.RequestException as ex:
-        print(f"Error fetching data for year {year}: {ex}")
+        print(f"Error fetching data for year {year}: {ex.__class__.__name__}")
         return pd.DataFrame()
     except ValueError as ex:
         print(f"Error parsing JSON response for year {year}: {ex}")
@@ -488,7 +488,7 @@ def fetch_year(institution_ids, year):
         res.raise_for_status()
         js = res.json()
     except requests.exceptions.RequestException as ex:
-        print(f"Error fetching data for year {year}: {ex}")
+        print(f"Error fetching data for year {year}: {ex.__class__.__name__}")
         return pd.DataFrame()
     except ValueError as ex:
         print(f"Error parsing JSON response for year {year}: {ex}")
@@ -824,6 +824,42 @@ SELECT
     COST_AVG_NET_PRICE_PRIVATE AS avg_net_price
 
 FROM COST_OF_VIRTUOSITY.RAW.DATA;
+
+-- Expect 55 rows in each table
+SELECT
+    'sql_cleaned' AS data_source,
+    COUNT(*) AS actual_rows,
+    55 AS expected_rows
+FROM COST_OF_VIRTUOSITY.ANALYTICS.SCHOOL_METRICS
+
+UNION ALL
+
+SELECT
+    'python_cleaned' AS data_source,
+    COUNT(*) AS actual_rows,
+    55 AS expected_rows
+FROM COST_OF_VIRTUOSITY.ANALYTICS.PYTHON_DATA;
+
+-- Expect no duplicate school-year keys
+SELECT
+    'sql_cleaned' AS data_source,
+    unitid,
+    year,
+    COUNT(*) AS row_count
+FROM COST_OF_VIRTUOSITY.ANALYTICS.SCHOOL_METRICS
+GROUP BY unitid, year
+HAVING COUNT(*) > 1
+
+UNION ALL
+
+SELECT
+    'python_cleaned' AS data_source,
+    unitid,
+    year,
+    COUNT(*) AS row_count
+FROM COST_OF_VIRTUOSITY.ANALYTICS.PYTHON_DATA
+GROUP BY unitid, year
+HAVING COUNT(*) > 1;
 
 -- Compare SQL-cleaned data against the Python-cleaned output
 WITH sql_cleaned AS (
