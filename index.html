@@ -854,26 +854,26 @@ python_cleaned AS (
     FROM COST_OF_VIRTUOSITY.ANALYTICS.PYTHON_DATA
 )
 
--- Check for differences in either direction
+-- Check for discrepancies
 SELECT
-    'sql_only' AS difference_source,
-    differences.*
+    'sql_only' AS diff_source,
+    diffs.*
 FROM (
     SELECT * FROM sql_cleaned
     EXCEPT
     SELECT * FROM python_cleaned
-) AS differences
+) AS diffs
 
 UNION ALL
 
 SELECT
-    'python_only' AS difference_source,
-    differences.*
+    'python_only' AS diff_source,
+    diffs.*
 FROM (
     SELECT * FROM python_cleaned
     EXCEPT
     SELECT * FROM sql_cleaned
-) AS differences;</code></pre>
+) AS diffs;</code></pre>
                     </details>
                 </div>
 
